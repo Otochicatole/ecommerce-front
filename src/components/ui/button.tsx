@@ -24,7 +24,7 @@ const Button: React.FC<ButtonProps> = ({
           type={type}
           onClick={onClick}
           disabled={disabled}
-          className={`px-4 py-2 flex flex-row font-medium cursor-pointer text-white bg-blue-500 rounded hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 ${disabled ? "opacity-50 cursor-not-allowed" : ""} ${className}`}
+          className={`px-4 py-2 flex flex-row font-medium cursor-pointer text-white bg-blue-400 rounded hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 ${disabled ? "opacity-50 cursor-not-allowed" : ""} ${className}`}
         >
           {children}
         </button>
