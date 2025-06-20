@@ -18,9 +18,11 @@ export default function Page() {
 
   return (
     <>
-      {data.map((product) => (
-        <CardProduct key={product.id} data={product} />
-      ))}
+      <ul className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 p-3">
+        {data.map((product) => (
+          <CardProduct key={product.id} data={product} />
+        ))}
+      </ul>
     </>
   );
 }
