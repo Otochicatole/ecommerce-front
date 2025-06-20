@@ -1,13 +1,25 @@
 import { Product } from "@/types/types";
 import Image from "next/image";
+import styles from "../styles/card-product.module.css";
+import { useRouter } from "next/navigation";
 
 export default function CardProduct({ data }: { data: Product }) {
+  const router = useRouter();
+
+  const fixPrice = data.price.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+  const fixOfferPrice = data.offerPrice.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+
+  const handleClick = () => {
+    router.push(`/product/${data.documentId}`);
+  }
+
   return (
-    <article className="relative grid grid-rows-[auto_1fr] rounded-xl overflow-hidden max-w-sm shadow-lg">
-      {data.offer && <span>Oferta Exclusiva</span>}
-      <figure>
+    <article
+      onClick={handleClick}
+      className={data.show ? styles.article : styles.articleDisabled}>
+      {data.offer && <span className={styles.offer}>Oferta Exclusiva</span>}
+      <figure className={styles.figure}>
         <Image
-          className="w-full h-60 object-cover object-top"
           src={`${process.env.NEXT_PUBLIC_STRAPI_URL}${data.media[0].url}`}
           alt={data.media[0].alternativeText || "Producto"}
           width={400}
@@ -15,23 +27,42 @@ export default function CardProduct({ data }: { data: Product }) {
           unoptimized
         />
       </figure>
-      <section className="grid grid-rows-[auto_auto_1fr_auto] gap-2 p-4">
-        <div className="grid grid-rows-[auto_auto] gap-1 mb-25">
-          <h1>{data.name}</h1>
-          <p>{data.description}</p>
+      <section className={styles.section}>
+        <div className={styles.header}>
+          <div className={styles['header-texto']}>
+            <h1 className={styles.title}>{data.name}</h1>
+            <p className={styles.desc}>{data.description}</p>
+          </div>
         </div>
-        <footer className="absolute bottom-0 left-0 flex flex-col w-full gap-7 p-4">
-          <div className="flex flex-row justify-between items-center">
-            <div>
+        <footer className={styles.footer}>
+          <div className={styles.footerContent}>
+            <div className={styles.priceContainer}>
               {data.offer ? (
                 <>
-                  <span>${data.price}</span>
-                  <span>${data.offerPrice}</span>
+                  <p className={styles.offerPrice}>${fixPrice}</p>
+                  <p
+                    className={styles.price}>
+                    ${fixOfferPrice}
+                    <span className={styles.discount}>
+                      {Math.round(
+                        ((Number(data.price) - Number(data.offerPrice)) / Number(data.price)) * 100
+                      )}
+                      % OFF
+                    </span>
+                  </p>
                 </>
               ) : (
-                <span>${data.price}</span>
+                <span className={styles.price}>${fixPrice}</span>
               )}
             </div>
+          </div>
+          <div className={styles.footerDescription}>
+            <br />
+            {data.show ?
+              <span style={{ color: "#4ea84e" }}>En stock</span>
+              :
+              <span style={{ color: "#9b1313", fontSize: 16 }}>Sin stock</span>
+            }
           </div>
         </footer>
       </section>

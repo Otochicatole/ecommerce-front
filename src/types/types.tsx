@@ -91,7 +91,12 @@ export interface Meta {
 }
 
 // API response type
-export interface ApiResponseProducts {
+export interface ApiResponseAllProducts {
   data: Product[];
+  meta: Meta;
+}
+
+export interface ApiResponseProductById {
+  data: Product;
   meta: Meta;
 }
