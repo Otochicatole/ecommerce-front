@@ -1,7 +1,5 @@
 import { Product } from "@/types/types";
-import { ShoppingBag } from "lucide-react";
 import Image from "next/image";
-import Button from "../ui/button";
 
 export default function CardProduct({ data }: { data: Product }) {
   return (
@@ -18,12 +16,12 @@ export default function CardProduct({ data }: { data: Product }) {
         />
       </figure>
       <section className="grid grid-rows-[auto_auto_1fr_auto] gap-2 p-4">
-        <div className="grid grid-rows-[auto_auto] gap-1 mb-10 border">
+        <div className="grid grid-rows-[auto_auto] gap-1 mb-25">
           <h1>{data.name}</h1>
           <p>{data.description}</p>
         </div>
-        <footer className="absolute bottom-0 left-0 flex flex-col w-full border">
-          <div className="flex flex-row justify-between">
+        <footer className="absolute bottom-0 left-0 flex flex-col w-full gap-7 p-4">
+          <div className="flex flex-row justify-between items-center">
             <div>
               {data.offer ? (
                 <>
@@ -34,14 +32,6 @@ export default function CardProduct({ data }: { data: Product }) {
                 <span>${data.price}</span>
               )}
             </div>
-            <Button>
-              <span>Add to Cart</span>
-              <ShoppingBag size={20} />
-            </Button>
-          </div>
-          <div className="flex items-center justify-between">
-            <div />
-            <span className="text-green-600">In Stock</span>
           </div>
         </footer>
       </section>
