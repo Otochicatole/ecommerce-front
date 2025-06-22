@@ -1,5 +1,7 @@
 'use client';
 
+import style from "./components/styles/default.module.css";
+import Box from "@/components/ui/box";
 import { fetchProductById } from "@/lib/get-products";
 import { Product } from "@/types/types";
 import { useEffect, useState } from "react";
@@ -27,8 +29,18 @@ export default function Page({ params }: { params: Promise<{ product: string }> 
   }, [productId]);
 
   return (
-    <>
-      <h1>{data.name}</h1>
-    </>
+    <div className={style.container}>
+      <Box>
+        <div className={style.containerSection}>
+          <section className={style.leftSection}>
+            <div>asd</div>
+          </section>
+          <section className={style.rightSection}>
+            {data.name}
+            {data.description}
+          </section>
+        </div>
+      </Box>
+    </div>
   );
 }
