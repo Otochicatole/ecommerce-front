@@ -1,0 +1,48 @@
+.button {
+  padding: 0.5rem 1rem;
+  display: flex;
+  flex-direction: row;
+  font-weight: 500;
+  border-radius: 0.25rem;
+  outline: none;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.primary {
+  color: #fff;
+  background-color: #60a5fa;
+}
+.primary:hover {
+  background-color: #2563eb;
+}
+.primary:focus {
+  box-shadow: 0 0 0 2px #3b82f6, 0 0 0 4px #fff;
+}
+
+.secondary {
+  color: #fff;
+  background-color: #6b7280;
+}
+.secondary:hover {
+  background-color: #4b5563;
+}
+.secondary:focus {
+  box-shadow: 0 0 0 2px #6b7280, 0 0 0 4px #fff;
+}
+
+.danger {
+  color: #fff;
+  background-color: #ef4444;
+}
+.danger:hover {
+  background-color: #dc2626;
+}
+.danger:focus {
+  box-shadow: 0 0 0 2px #ef4444, 0 0 0 4px #fff;
+}
+
+.disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
