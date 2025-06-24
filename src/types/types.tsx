@@ -5,7 +5,7 @@ export interface Product {
   id: number;
   documentId: string;
   name: string;
-  description: string;
+  description: any;
   price: string;
   offerPrice: string;
   offer: boolean;
@@ -100,3 +100,4 @@ export interface ApiResponseProductById {
   data: Product;
   meta: Meta;
 }
+

@@ -2,21 +2,25 @@ import { Product } from "@/types/types";
 import Image from "next/image";
 import styles from "../styles/card-product.module.css";
 import { useRouter } from "next/navigation";
+import { BlocksRenderer } from "@strapi/blocks-react-renderer";
 
 export default function CardProduct({ data }: { data: Product }) {
   const router = useRouter();
 
   const fixPrice = data.price.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
-  const fixOfferPrice = data.offerPrice.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+  const fixOfferPrice = data.offerPrice
+    .toString()
+    .replace(/\B(?=(\d{3})+(?!\d))/g, ".");
 
   const handleClick = () => {
     router.push(`/product/${data.documentId}`);
-  }
+  };
 
   return (
     <article
       onClick={handleClick}
-      className={data.show ? styles.article : styles.articleDisabled}>
+      className={data.show ? styles.article : styles.articleDisabled}
+    >
       {data.offer && <span className={styles.offer}>Oferta Exclusiva</span>}
       <figure className={styles.figure}>
         <Image
@@ -29,9 +33,15 @@ export default function CardProduct({ data }: { data: Product }) {
       </figure>
       <section className={styles.section}>
         <div className={styles.header}>
-          <div className={styles['header-texto']}>
+          <div className={styles["header-texto"]}>
             <h1 className={styles.title}>{data.name}</h1>
-            <p className={styles.desc}>{data.description}</p>
+            <div className={styles.desc}>
+              {data?.description ? (
+                <BlocksRenderer content={data.description} />
+              ) : (
+                <p>No description available.</p>
+              )}
+            </div>
           </div>
         </div>
         <footer className={styles.footer}>
@@ -40,12 +50,13 @@ export default function CardProduct({ data }: { data: Product }) {
               {data.offer ? (
                 <>
                   <p className={styles.offerPrice}>${fixPrice}</p>
-                  <p
-                    className={styles.price}>
+                  <p className={styles.price}>
                     ${fixOfferPrice}
                     <span className={styles.discount}>
                       {Math.round(
-                        ((Number(data.price) - Number(data.offerPrice)) / Number(data.price)) * 100
+                        ((Number(data.price) - Number(data.offerPrice)) /
+                          Number(data.price)) *
+                          100,
                       )}
                       % OFF
                     </span>
@@ -58,11 +69,11 @@ export default function CardProduct({ data }: { data: Product }) {
           </div>
           <div className={styles.footerDescription}>
             <br />
-            {data.show ?
+            {data.show ? (
               <span style={{ color: "#4ea84e" }}>En stock</span>
-              :
+            ) : (
               <span style={{ color: "#9b1313", fontSize: 16 }}>Sin stock</span>
-            }
+            )}
           </div>
         </footer>
       </section>

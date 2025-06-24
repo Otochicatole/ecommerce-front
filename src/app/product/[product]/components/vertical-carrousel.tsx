@@ -11,7 +11,7 @@ export default function VerticalCarousel({
 }) {
   return (
     <>
-      <div className="flex flex-col h-[550px] w-[112px] p-3 bg-black/5 rounded-lg shadow-lg border border-black/3 relative group">
+      <div className="flex flex-col h-[550px] w-[190px] p-3 bg-black/5 rounded-lg shadow-lg border border-black/3 relative group">
         <button
           className="absolute -top-5 w-7 h-7 left-1/2 transform z-10 -translate-x-1/2 bg-white text-black p-2 rounded-full shadow-md transition-all opacity-0 group-hover:opacity-100 cursor-pointer"
           onClick={() => {
@@ -25,7 +25,7 @@ export default function VerticalCarousel({
         </button>
         <div
           id="image-carousel"
-          className="h-[500px] overflow-hidden scrollbar-hide"
+          className="flex flex-col h-[500px] overflow-auto items-center scrollbar-none"
         >
           {data.media?.map((img, index) => (
             <Image

@@ -47,6 +47,15 @@
   border-radius: 4px;
 }
 
+.hide-scrollbar {
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE y Edge */
+}
+
+.hide-scrollbar::-webkit-scrollbar {
+  display: none; /* Chrome, Safari */
+}
+
 body {
   color: var(--foreground);
   background: var(--background);

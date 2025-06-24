@@ -6,6 +6,7 @@ import { Product } from "@/types/types";
 import { useEffect, useState } from "react";
 import Image from "next/image";
 import VerticalCarousel from "./components/vertical-carrousel";
+import { BlocksRenderer } from "@strapi/blocks-react-renderer";
 
 export default function Page({
   params,
@@ -61,9 +62,11 @@ export default function Page({
               <h2 className="text-xl text-black/70 font-semibold mb-2">
                 Descripción
               </h2>
-              <p className="text-black/50 text-xl whitespace-pre-line">
-                {data.description}
-              </p>
+              {data?.description ? (
+                <BlocksRenderer content={data.description} />
+              ) : (
+                <p>No description available.</p>
+              )}
             </section>
           </article>
 
