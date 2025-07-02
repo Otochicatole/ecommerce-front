@@ -4,8 +4,11 @@ import styles from "../styles/card-product.module.css";
 import { useRouter } from "next/navigation";
 import { BlocksRenderer } from "@strapi/blocks-react-renderer";
 
+
 export default function CardProduct({ data }: { data: Product }) {
   const router = useRouter();
+
+  const URL = process.env.NEXT_PUBLIC_STRAPI_URL
 
   const fixPrice = data.price.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
   const fixOfferPrice = data.offerPrice
@@ -16,6 +19,10 @@ export default function CardProduct({ data }: { data: Product }) {
     router.push(`/product/${data.documentId}`);
   };
 
+  const mainImage = data.media?.[0];
+  const imageUrl = mainImage?.url ? `${URL}${mainImage.url}` : "/nullimg.webp";
+  const imageAlt = mainImage?.alternativeText || "Producto";
+
   return (
     <article
       onClick={handleClick}
@@ -24,8 +31,10 @@ export default function CardProduct({ data }: { data: Product }) {
       {data.offer && <span className={styles.offer}>Oferta Exclusiva</span>}
       <figure className={styles.figure}>
         <Image
-          src={`${process.env.NEXT_PUBLIC_STRAPI_URL}${data.media[0].url}`}
-          alt={data.media[0].alternativeText || "Producto"}
+          className="object-cover"
+          loading="lazy"
+          src={imageUrl}
+          alt={imageAlt}
           width={400}
           height={400}
           unoptimized
@@ -56,7 +65,7 @@ export default function CardProduct({ data }: { data: Product }) {
                       {Math.round(
                         ((Number(data.price) - Number(data.offerPrice)) /
                           Number(data.price)) *
-                          100,
+                        100,
                       )}
                       % OFF
                     </span>

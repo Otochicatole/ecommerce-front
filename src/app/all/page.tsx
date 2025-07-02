@@ -13,7 +13,7 @@ export default function Page() {
   useEffect(() => {
     const fetchData = async () => {
 
-      await new Promise((resolve) => setTimeout(resolve, 1000));
+      await new Promise((resolve) => setTimeout(resolve, 300));
 
       const data = await fetchAllProducts();
       setData(data.data);
@@ -24,7 +24,7 @@ export default function Page() {
 
   return (
     <>
-      <ul className="grid grid-cols-1 sm:grid-cols-2 text-[#ffff00] lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4 p-3">
+      <ul className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4 p-3">
         {loading
           ? Array.from({ length: 10 }).map((_, index) => (
             <CardProductSkeleton key={index} />

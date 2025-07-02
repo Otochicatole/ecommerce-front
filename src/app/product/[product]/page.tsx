@@ -19,8 +19,12 @@ export default function Page({
 
   useEffect(() => {
     const resolveParams = async () => {
-      const resolvedParams = await params;
-      setProductId(resolvedParams.product);
+      try {
+        const resolvedParams = await params;
+        setProductId(resolvedParams.product);
+      } catch (error) {
+        console.error("Error resolving params:", error);
+      }
     };
     resolveParams();
   }, [params]);
@@ -28,10 +32,19 @@ export default function Page({
   useEffect(() => {
     if (productId) {
       const fetchData = async () => {
-        const data = await fetchProductById(productId);
-        setData(data.data);
-        const UrlDefaultImage = `${process.env.NEXT_PUBLIC_STRAPI_URL}${data.data.media?.[0]?.url}`;
-        setImageViewUrl(UrlDefaultImage);
+        try {
+          const data = await fetchProductById(productId);
+          setData(data.data);
+          const imageUrl = data.data.media?.[0]?.url;
+          if (imageUrl) {
+            const fullUrl = `${process.env.NEXT_PUBLIC_STRAPI_URL}${imageUrl}`;
+            setImageViewUrl(fullUrl);
+          } else {
+            setImageViewUrl("/nullimg.webp");
+          }
+        } catch (error) {
+          console.error("Error fetching product data:", error);
+        }
       };
       fetchData();
     }
@@ -49,7 +62,8 @@ export default function Page({
                   <Image
                     className="object-cover rounded-lg"
                     src={imageViewUrl}
-                    alt={data.name || "Imagen del producto"}
+                    loading="lazy"
+                    alt={data.name ? data.name : "Imagen del producto"}
                     width={500}
                     height={500}
                     unoptimized
@@ -73,7 +87,7 @@ export default function Page({
           <aside className="flex flex-col w-[30%] p-3 border border-black/10 rounded-lg">
             <header>
               <h1 className="text-xl font-semibold text-gray-900">
-                {data.name}
+                {data && data.name}
               </h1>
             </header>
 

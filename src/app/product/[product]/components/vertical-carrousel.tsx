@@ -4,12 +4,16 @@ import { ChevronDown, ChevronUp } from "lucide-react";
 import { useRef } from "react";
 
 interface VerticalCarouselProps {
-  data: Product;
-  setImageViewUrl: React.Dispatch<React.SetStateAction<string>>;
+  data?: Product;
+  setImageViewUrl?: React.Dispatch<React.SetStateAction<string>>;
 }
 
-const getImageUrl = (url?: string) =>
-  `${process.env.NEXT_PUBLIC_STRAPI_URL}${url || ""}`;
+const getImageUrl = (url?: string) => {
+  if (url) {
+    return `${process.env.NEXT_PUBLIC_STRAPI_URL}${url}`;
+  }
+  return "/nullimg.webp";
+};
 
 const scrollStep = (
   direction: "up" | "down",
@@ -48,6 +52,7 @@ export default function VerticalCarousel({
     }
   };
 
+
   return (
     <div className="flex flex-col h-[550px] w-[190px] p-3 bg-black/5 rounded-lg shadow-lg border border-black/3 relative group">
       <button
@@ -62,20 +67,35 @@ export default function VerticalCarousel({
       </button>
       <div
         id="image-carousel"
-        className="flex flex-col h-[500px] overflow-auto items-center hide-scrollbar"
+        className="flex flex-col h-full py-3 overflow-auto items-center hide-scrollbar"
       >
-        {data.media?.map((img, index) => (
+        {data?.media ? data?.media?.map((img, index) => (
           <Image
             key={index}
             className="object-cover rounded-sm mb-4 cursor-pointer hover:scale-110 transition-all"
             src={getImageUrl(img.url)}
             alt={data.name || "Imagen del producto"}
+            loading="lazy"
             width={100}
             height={100}
             unoptimized
-            onMouseEnter={() => setImageViewUrl(getImageUrl(img.url))}
+            onMouseEnter={() => {
+              if (setImageViewUrl && img.url) {
+                setImageViewUrl(getImageUrl(img.url));
+              }
+            }}
           />
-        ))}
+        )) :
+          <Image
+            className="object-cover rounded-sm mb-4 cursor-pointer hover:scale-110 transition-all"
+            loading="lazy"
+            src="/nullimg.webp"
+            alt="Imagen del producto"
+            width={100}
+            height={100}
+            unoptimized
+          />
+        }
       </div>
       <button
         className="absolute -bottom-3 left-1/2 transform w-7 h-7 z-10 -translate-x-1/2 bg-white text-black p-2 rounded-full shadow-md opacity-0 transition-all group-hover:opacity-100 cursor-pointer"
