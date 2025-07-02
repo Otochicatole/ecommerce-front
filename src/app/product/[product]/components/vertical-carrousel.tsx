@@ -67,12 +67,12 @@ export default function VerticalCarousel({
       </button>
       <div
         id="image-carousel"
-        className="flex flex-col h-full py-3 overflow-auto items-center hide-scrollbar"
+        className="flex flex-col h-full py-3 px-2 overflow-auto items-center hide-scrollbar"
       >
         {data?.media ? data?.media?.map((img, index) => (
           <Image
             key={index}
-            className="object-cover rounded-sm mb-4 w-fit h-fit cursor-pointer hover:scale-110 transition-all"
+            className="object-cover rounded-sm mb-4 h-fit w-fit cursor-pointer hover:scale-110 transition-all"
             src={getImageUrl(img.url)}
             alt={data.name || "Imagen del producto"}
             loading="lazy"
@@ -85,17 +85,7 @@ export default function VerticalCarousel({
               }
             }}
           />
-        )) :
-          <Image
-            className="object-cover rounded-sm mb-4 w-fit h-fit cursor-pointer hover:scale-110 transition-all"
-            loading="lazy"
-            src="/nullimg.webp"
-            alt="Imagen del producto"
-            width={100}
-            height={100}
-            unoptimized
-          />
-        }
+        )) : null}
       </div>
       <button
         className="absolute -bottom-3 left-1/2 transform w-7 h-7 z-10 -translate-x-1/2 bg-white text-black p-2 rounded-full shadow-md opacity-0 transition-all group-hover:opacity-100 cursor-pointer"
