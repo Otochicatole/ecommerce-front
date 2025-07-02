@@ -60,7 +60,7 @@ export default function Page({
               <div className="flex flex-row items-center justify-center w-full overflow-hidden h-[550px] p-6 bg-black/5 rounded-lg shadow-lg border border-black/1">
                 {imageViewUrl ? (
                   <Image
-                    className="object-cover rounded-lg"
+                    className="object-cover w-fit h-fit rounded-lg"
                     src={imageViewUrl}
                     loading="lazy"
                     alt={data.name ? data.name : "Imagen del producto"}

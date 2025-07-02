@@ -31,7 +31,7 @@ export default function CardProduct({ data }: { data: Product }) {
       {data.offer && <span className={styles.offer}>Oferta Exclusiva</span>}
       <figure className={styles.figure}>
         <Image
-          className="object-cover"
+          className="object-cover w-fit h-fit"
           loading="lazy"
           src={imageUrl}
           alt={imageAlt}

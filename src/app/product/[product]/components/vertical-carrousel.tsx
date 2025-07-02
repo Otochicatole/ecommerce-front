@@ -72,7 +72,7 @@ export default function VerticalCarousel({
         {data?.media ? data?.media?.map((img, index) => (
           <Image
             key={index}
-            className="object-cover rounded-sm mb-4 cursor-pointer hover:scale-110 transition-all"
+            className="object-cover rounded-sm mb-4 w-fit h-fit cursor-pointer hover:scale-110 transition-all"
             src={getImageUrl(img.url)}
             alt={data.name || "Imagen del producto"}
             loading="lazy"
@@ -87,7 +87,7 @@ export default function VerticalCarousel({
           />
         )) :
           <Image
-            className="object-cover rounded-sm mb-4 cursor-pointer hover:scale-110 transition-all"
+            className="object-cover rounded-sm mb-4 w-fit h-fit cursor-pointer hover:scale-110 transition-all"
             loading="lazy"
             src="/nullimg.webp"
             alt="Imagen del producto"
