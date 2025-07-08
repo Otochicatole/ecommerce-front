@@ -1,32 +1,40 @@
+'use client';
+import { fetchAllCategories } from "@/lib/get-categories";
+import { CategoryAttributes } from "@/types/api/category-response";
 import { ChevronDown, Search } from "lucide-react";
 import Link from "next/link";
+import { useEffect, useState } from "react";
+
+const links = [
+    {
+        href: "/",
+        label: "Home",
+    },
+    {
+        href: "/offers",
+        label: "Ofertas",
+    },
+    {
+        href: "/all",
+        label: "Todo",
+    },
+]
+
 
 export default function NavBar() {
-    const dropdownLinks = [
-        { href: "#", label: "view profile" },
-        { href: "#", label: "Settings" },
-        { href: "#", label: "Keyboard shortcuts" },
-        { href: "#", label: "Company profile" },
-        { href: "#", label: "Team" },
-        { href: "#", label: "Invite colleagues" },
-        { href: "#", label: "Help" },
-        { href: "#", label: "Sign Out" },
-    ];
+    const [dropdownLinksCategories, setDropdownLinksCategories] = useState<CategoryAttributes[]>([]);
 
-    const links = [
-        {
-            href: "/",
-            label: "Home",
-        },
-        {
-            href: "/offers",
-            label: "Ofertas",
-        },
-        {
-            href: "/all",
-            label: "Todo",
-        },
-    ]
+    useEffect(() => {
+        const fetchCategories = async () => {
+            try {
+                const response = await fetchAllCategories();
+                setDropdownLinksCategories(response.data);
+            } catch (error) {
+                console.error("Error fetching categories:", error);
+            }
+        };
+        fetchCategories();
+    }, []);
 
     return (
         <>
@@ -69,20 +77,19 @@ export default function NavBar() {
 
                             {/* Dropdown menu */}
                             <div className="absolute right-0 hidden group-hover:block border border-black/5 z-20 w-56 py-2  overflow-hidden bg-white rounded-md shadow-xl">
-                                {dropdownLinks.map((link) => (
-                                    <a
-                                        key={link.label}
-                                        href={link.href}
+                                {dropdownLinksCategories?.map((link) => (
+                                    <Link
+                                        key={link.documentId}
+                                        href={`/category/${link.type}`}
                                         className="block px-4 py-3 text-sm capitalize transition-colors duration-200 transform hover:bg-gray-100"
                                     >
-                                        {link.label}
-                                    </a>
+                                        {link.type}
+                                    </Link>
                                 ))}
                             </div>
                         </div>
                     </div>
                 </div>
-                <div />
             </nav >
         </>
     )

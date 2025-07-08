@@ -1,4 +1,4 @@
-import { Product } from "@/types/types";
+import { Product } from "@/types/api/product-response";
 import Image from "next/image";
 import styles from "../styles/card-product.module.css";
 import { useRouter } from "next/navigation";

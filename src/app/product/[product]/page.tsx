@@ -2,7 +2,7 @@
 
 import Box from "@/components/ui/box";
 import { fetchProductById } from "@/lib/get-products";
-import { Product } from "@/types/types";
+import { Product } from "@/types/api/product-response";
 import { useEffect, useState } from "react";
 import Image from "next/image";
 import VerticalCarousel from "./components/vertical-carrousel";

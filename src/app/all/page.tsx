@@ -2,25 +2,35 @@
 
 import CardProduct from "@/components/common/card-product";
 import CardProductSkeleton from "@/components/common/card-product-skeleton";
-import {fetchAllProducts} from "@/lib/get-products";
-import {useEffect, useState} from "react";
-import {Product} from "@/types/types";
+import { fetchAllProducts } from "@/lib/get-products";
+import { useEffect, useState } from "react";
+import { Product } from "@/types/api/product-response";
 
-export default function Page() {
+export default function AllProductsPage() {
   const [data, setData] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchData = async () => {
-
-      await new Promise((resolve) => setTimeout(resolve, 300));
-
-      const data = await fetchAllProducts();
-      setData(data.data);
-      setLoading(false);
+      try {
+        setError(null);
+        await new Promise((resolve) => setTimeout(resolve, 300));
+        const response = await fetchAllProducts();
+        setData(response.data);
+      } catch (err) {
+        console.error("Failed to fetch products:", err);
+        setError("An error occurred while fetching the products. Please try again later.");
+      } finally {
+        setLoading(false);
+      }
     };
     fetchData();
   }, []);
+
+  if (error) {
+    return <p className="text-center text-red-500 p-4">{error}</p>;
+  }
 
   return (
     <>
