@@ -1,9 +1,10 @@
 'use client';
 import { fetchAllCategories } from "@/lib/get-categories";
 import { CategoryAttributes } from "@/types/api/category-response";
-import { ChevronDown, Search } from "lucide-react";
+import { ChevronDown } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import SearchBar from "../common/search-bar";
 
 const links = [
     {
@@ -41,19 +42,7 @@ export default function NavBar() {
             <nav className="fixed top-0 left-0 flex flex-row w-full justify-center gap-10 px-6 z-50 min-h-20 bg-white shadow-sm">
                 <div className="flex flex-col pt-3 justify-between gap-3 w-[40%]">
                     {/* search bar */}
-
-                    <div className="relative flex w-full text-gray-600">
-                        <input
-                            type="search"
-                            name="serch"
-                            placeholder="Search"
-                            className="bg-black/2 border border-black/10 h-10 px-6 py-4 w-full pl-10 rounded-full focus:outline-none" />
-                        <button
-                            type="submit"
-                            className="absolute left-0 top-0 mt-3 ml-4">
-                            <Search size={16} />
-                        </button>
-                    </div>
+                    <SearchBar />
 
                     <div className="flex px-6 w-full text-black/80">
                         {/* links */}
