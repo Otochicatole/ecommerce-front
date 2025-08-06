@@ -2,6 +2,9 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import NavBar from "@/shared/layout/nav-bar";
+import { CartProvider } from "@/shared/cart/cart-context";
+import CartAside from "@/shared/cart/cart-aside";
+import { Toaster } from "react-hot-toast";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -26,10 +29,32 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={`${geistSans.variable} ${geistMono.variable}`}>
-        <NavBar />
-        <main className="mt-[106px]">
-          {children}
-        </main>
+        <CartProvider>
+          <NavBar />
+          <CartAside />
+          <main className="mt-[106px]">
+            {children}
+          </main>
+          <Toaster
+            position="bottom-right"
+            toastOptions={{
+              duration: 2000,
+              style: {
+                padding: '16px 24px',
+                fontSize: '1rem',
+                background: '#1e77af',
+                color: '#fff',
+                borderRadius: '12px',
+              },
+              success: {
+                iconTheme: {
+                  primary: '#10b981',
+                  secondary: '#d1fae5',
+                },
+              },
+            }}
+          />
+        </CartProvider>
       </body>
     </html>
   );

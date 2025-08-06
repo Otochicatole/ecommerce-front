@@ -1,4 +1,6 @@
 'use client';
+import { ShoppingCart } from 'lucide-react';
+import { useCart } from '@/shared/cart/cart-context';
 import { fetchAllCategories } from '@catalog/services/categories';
 import { CategoryAttributes } from '@/types/api/category-response';
 import { ChevronDown } from 'lucide-react';
@@ -27,8 +29,12 @@ export default function NavBar() {
     fetchCategories();
   }, []);
 
+  const { totalItems, toggleCart } = useCart();
+
   return (
-    <nav className='fixed top-0 left-0 flex flex-row w-full justify-center gap-10 px-6 z-50 min-h-20 bg-white shadow-sm'>
+    <nav className='fixed top-0 left-0 flex flex-row items-center w-full justify-between px-6 z-50 min-h-20 bg-white shadow-sm'>
+      <div />
+      {/* Central section with search and links */}
       <div className='flex flex-col pt-3 justify-between gap-3 w-[40%]'>
         <SearchBar />
 
@@ -62,6 +68,16 @@ export default function NavBar() {
           </div>
         </div>
       </div>
+
+      {/* Cart button */}
+      <button onClick={toggleCart} className='relative p-3 hover:bg-gray-100 rounded-lg active:scale-95 transition-transform'>
+        <ShoppingCart size={24} />
+        {totalItems > 0 && (
+          <span className='absolute -top-1 -right-1 bg-rose-600 text-white text-[10px] leading-none px-1.5 py-0.5 rounded-full'>
+            {totalItems}
+          </span>
+        )}
+      </button>
     </nav>
   );
 }
