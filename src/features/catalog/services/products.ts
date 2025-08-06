@@ -35,3 +35,14 @@ export async function fetchProductById(id: string): Promise<ApiResponseProductBy
   if (!response.ok) throw new Error(`Failed to fetch product: ${response.statusText}`);
   return response.json();
 }
+
+export async function fetchProductByDocumentId(documentId: string): Promise<ApiResponseProductById> {
+  const query = new URLSearchParams();
+  query.append('filters[documentId][$eq]', documentId);
+  query.append('populate', '*');
+
+  const response = await fetch(`${host}/api/products?${query.toString()}`);
+  if (!response.ok) throw new Error(`Failed to fetch product: ${response.statusText}`);
+  const data = await response.json() as ApiResponseAllProducts;
+  return { data: data.data[0], meta: data.meta } as unknown as ApiResponseProductById;
+}
