@@ -1,6 +1,8 @@
 import { ApiResponseAllCategories } from "@/types/api/category-response";
 
-const host = process.env.NEXT_PUBLIC_STRAPI_URL;
+import env from "@/config";
+
+const host = env.strapiUrl;
 
 export async function fetchAllCategories(): Promise<ApiResponseAllCategories> {
   if (!host) {

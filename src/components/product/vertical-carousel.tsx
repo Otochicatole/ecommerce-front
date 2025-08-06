@@ -1,7 +1,9 @@
+'use client';
 import { Product } from "@/types/api/product-response";
 import Image from "next/image";
 import { ChevronDown, ChevronUp } from "lucide-react";
 import { useRef } from "react";
+import env from "@/config";
 
 interface VerticalCarouselProps {
   data?: Product;
@@ -10,15 +12,12 @@ interface VerticalCarouselProps {
 
 const getImageUrl = (url?: string) => {
   if (url) {
-    return `${process.env.NEXT_PUBLIC_STRAPI_URL}${url}`;
+    return `${env.strapiUrl}${url}`;
   }
   return "/nullimg.webp";
 };
 
-const scrollStep = (
-  direction: "up" | "down",
-  smooth: boolean = false
-) => {
+const scrollStep = (direction: "up" | "down", smooth: boolean = false) => {
   const carousel = document.getElementById("image-carousel");
   if (!carousel) return;
   carousel.scrollBy({
@@ -52,7 +51,6 @@ export default function VerticalCarousel({
     }
   };
 
-
   return (
     <div className="flex flex-col h-[550px] w-[190px] p-3 bg-black/5 rounded-lg shadow-lg border border-black/3 relative group">
       <button
@@ -69,23 +67,25 @@ export default function VerticalCarousel({
         id="image-carousel"
         className="flex flex-col h-full py-3 px-2 overflow-auto items-center hide-scrollbar"
       >
-        {data?.media ? data?.media?.map((img, index) => (
-          <Image
-            key={index}
-            className="object-cover rounded-sm mb-4 h-fit w-fit cursor-pointer hover:scale-110 transition-all"
-            src={getImageUrl(img.url)}
-            alt={data.name || "Imagen del producto"}
-            loading="lazy"
-            width={100}
-            height={100}
-            unoptimized
-            onMouseEnter={() => {
-              if (setImageViewUrl && img.url) {
-                setImageViewUrl(getImageUrl(img.url));
-              }
-            }}
-          />
-        )) : null}
+        {data?.media
+          ? data.media.map((img, index) => (
+              <Image
+                key={index}
+                className="object-cover rounded-sm mb-4 h-fit w-fit cursor-pointer hover:scale-110 transition-all"
+                src={getImageUrl(img.url)}
+                alt={data.name || "Imagen del producto"}
+                loading="lazy"
+                width={100}
+                height={100}
+                unoptimized
+                onMouseEnter={() => {
+                  if (setImageViewUrl && img.url) {
+                    setImageViewUrl(getImageUrl(img.url));
+                  }
+                }}
+              />
+            ))
+          : null}
       </div>
       <button
         className="absolute -bottom-3 left-1/2 transform w-7 h-7 z-10 -translate-x-1/2 bg-white text-black p-2 rounded-full shadow-md opacity-0 transition-all group-hover:opacity-100 cursor-pointer"

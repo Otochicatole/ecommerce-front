@@ -1,7 +1,8 @@
 'use client';
 import { Product } from "@/types/api/product-response";
+import env from "@/config";
 import Image from "next/image";
-import styles from "../styles/card-product.module.css";
+import styles from "./card-product.module.css";
 import { useRouter } from "next/navigation";
 import { BlocksRenderer } from "@strapi/blocks-react-renderer";
 
@@ -9,7 +10,7 @@ import { BlocksRenderer } from "@strapi/blocks-react-renderer";
 export default function CardProduct({ data }: { data: Product }) {
   const router = useRouter();
 
-  const URL = process.env.NEXT_PUBLIC_STRAPI_URL
+  const URL = env.strapiUrl
 
   const fixPrice = data.price.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
   const fixOfferPrice = data.offerPrice

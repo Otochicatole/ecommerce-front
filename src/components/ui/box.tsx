@@ -1,4 +1,4 @@
-import style from "../styles/box.module.css";
+import style from "./box.module.css";
 
 export default function Box({
     children,

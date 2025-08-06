@@ -3,7 +3,9 @@ import {
   ApiResponseProductById,
 } from "@/types/api/product-response";
 
-const host = process.env.NEXT_PUBLIC_STRAPI_URL;
+import env from "@/config";
+
+const host = env.strapiUrl;
 
 export async function fetchAllProducts(): Promise<ApiResponseAllProducts> {
   if (!host) {

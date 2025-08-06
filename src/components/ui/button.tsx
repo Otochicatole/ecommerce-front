@@ -1,5 +1,5 @@
 import React from "react";
-import styles from "../styles/button.module.css";
+import styles from "./button.module.css";
 
 type ButtonProps = {
   type?: "button" | "submit" | "reset";

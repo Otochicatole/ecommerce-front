@@ -1,4 +1,4 @@
-import styles from "../styles/card-product.module.css";
+import styles from "./card-product.module.css";
 
 export default function CardProductSkeleton() {
   return (
