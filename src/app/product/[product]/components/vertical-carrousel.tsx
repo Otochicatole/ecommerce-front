@@ -1,4 +1,4 @@
-import { Product } from "@/types/types";
+import { Product } from "@/types/api/product-response";
 import Image from "next/image";
 import { ChevronDown, ChevronUp } from "lucide-react";
 import { useRef } from "react";
