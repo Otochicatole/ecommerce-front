@@ -1,4 +1,4 @@
-/* moved from styles directory */
+/* moved from components/common */
 .article {
   position: relative;
   display: grid;
@@ -38,12 +38,7 @@
   position: absolute;
   top: 10px;
   right: 10px;
-  background: linear-gradient(
-    to right,
-    rgba(169, 3, 41, 1) 0%,
-    rgba(196, 72, 72, 1) 44%,
-    rgba(170, 34, 56, 1) 100%
-  );
+  background: linear-gradient(to right, rgba(169, 3, 41, 1) 0%, rgba(196, 72, 72, 1) 44%, rgba(170, 34, 56, 1) 100%);
   color: #fff;
   padding: 5px 10px;
   font-size: 11px;

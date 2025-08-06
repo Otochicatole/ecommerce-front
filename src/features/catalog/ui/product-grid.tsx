@@ -1,7 +1,6 @@
 'use client';
-
-import CardProduct from "@/components/common/card-product";
-import CardProductSkeleton from "@/components/common/card-product-skeleton";
+import CardProduct from "./card-product";
+import CardProductSkeleton from "./card-product-skeleton";
 import { Product } from "@/types/api/product-response";
 
 interface ProductGridProps {

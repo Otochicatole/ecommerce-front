@@ -11,37 +11,25 @@ interface VerticalCarouselProps {
 }
 
 const getImageUrl = (url?: string) => {
-  if (url) {
-    return `${env.strapiUrl}${url}`;
-  }
+  if (url) return `${env.strapiUrl}${url}`;
   return "/nullimg.webp";
 };
 
-const scrollStep = (direction: "up" | "down", smooth: boolean = false) => {
+const scrollStep = (direction: "up" | "down", smooth = false) => {
   const carousel = document.getElementById("image-carousel");
   if (!carousel) return;
-  carousel.scrollBy({
-    top: direction === "up" ? -20 : 20,
-    ...(smooth ? { behavior: "smooth" } : {}),
-  });
+  carousel.scrollBy({ top: direction === "up" ? -20 : 20, ...(smooth ? { behavior: "smooth" } : {}) });
 };
 
-export default function VerticalCarousel({
-  data,
-  setImageViewUrl,
-}: VerticalCarouselProps) {
+export default function VerticalCarousel({ data, setImageViewUrl }: VerticalCarouselProps) {
   const scrollInterval = useRef<NodeJS.Timeout | null>(null);
 
-  const handleScroll = (direction: "up" | "down") => {
-    scrollStep(direction, true);
-  };
+  const handleScroll = (direction: "up" | "down") => scrollStep(direction, true);
 
   const handleScrollStart = (direction: "up" | "down") => {
     if (scrollInterval.current) return;
     scrollStep(direction, false);
-    scrollInterval.current = setInterval(() => {
-      scrollStep(direction, false);
-    }, 16);
+    scrollInterval.current = setInterval(() => scrollStep(direction, false), 16);
   };
 
   const handleScrollStop = () => {
@@ -63,30 +51,27 @@ export default function VerticalCarousel({
       >
         <ChevronUp size={12} />
       </button>
-      <div
-        id="image-carousel"
-        className="flex flex-col h-full py-3 px-2 overflow-auto items-center hide-scrollbar"
-      >
-        {data?.media
-          ? data.media.map((img, index) => (
-              <Image
-                key={index}
-                className="object-cover rounded-sm mb-4 h-fit w-fit cursor-pointer hover:scale-110 transition-all"
-                src={getImageUrl(img.url)}
-                alt={data.name || "Imagen del producto"}
-                loading="lazy"
-                width={100}
-                height={100}
-                unoptimized
-                onMouseEnter={() => {
-                  if (setImageViewUrl && img.url) {
-                    setImageViewUrl(getImageUrl(img.url));
-                  }
-                }}
-              />
-            ))
-          : null}
+
+      <div id="image-carousel" className="flex flex-col h-full py-3 px-2 overflow-auto items-center hide-scrollbar">
+        {data?.media?.map((img, index) => (
+          <Image
+            key={index}
+            className="object-cover rounded-sm mb-4 h-fit w-fit cursor-pointer hover:scale-110 transition-all"
+            src={getImageUrl(img.url)}
+            alt={data.name || "Imagen del producto"}
+            loading="lazy"
+            width={100}
+            height={100}
+            unoptimized
+            onMouseEnter={() => {
+              if (setImageViewUrl && img.url) {
+                setImageViewUrl(getImageUrl(img.url));
+              }
+            }}
+          />
+        ))}
       </div>
+
       <button
         className="absolute -bottom-3 left-1/2 transform w-7 h-7 z-10 -translate-x-1/2 bg-white text-black p-2 rounded-full shadow-md opacity-0 transition-all group-hover:opacity-100 cursor-pointer"
         onClick={() => handleScroll("down")}

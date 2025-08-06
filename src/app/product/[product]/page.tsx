@@ -1,5 +1,5 @@
-import { fetchProductById } from "@/lib/get-products";
-import ProductDetail from "@/components/product/product-detail";
+import { fetchProductById } from "@catalog/services/products";
+import ProductDetail from "@catalog/ui/product-detail";
 import { Product } from "@/types/api/product-response";
 
 export default async function Page({ params }: { params: { product: string } }) {

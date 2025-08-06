@@ -1,5 +1,5 @@
 'use client';
-import { fetchAllCategories } from "@/lib/get-categories";
+import { fetchAllCategories } from "@catalog/services/categories";
 import { CategoryAttributes } from "@/types/api/category-response";
 import { ChevronDown } from "lucide-react";
 import Link from "next/link";
@@ -69,7 +69,7 @@ export default function NavBar() {
                                 {dropdownLinksCategories?.map((link) => (
                                     <Link
                                         key={link.documentId}
-                                        href={`/category/${link.type}`}
+                                        href={`/category/${encodeURIComponent(link.type)}`}
                                         className="block px-4 py-3 text-sm capitalize transition-colors duration-200 transform hover:bg-gray-100"
                                     >
                                         {link.type}

@@ -1,5 +1,5 @@
 'use client';
-import { fetchAllProducts } from "@/lib/get-products";
+import { fetchAllProducts } from "@catalog/services/products";
 import { Product } from "@/types/api/product-response";
 import { Search } from "lucide-react";
 import { useRouter } from "next/navigation";

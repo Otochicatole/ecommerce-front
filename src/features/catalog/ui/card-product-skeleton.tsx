@@ -1,3 +1,4 @@
+'use client';
 import styles from "./card-product.module.css";
 
 export default function CardProductSkeleton() {
