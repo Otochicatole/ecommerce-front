@@ -1,5 +1,5 @@
 import React from "react";
-import styles from "./button.module.css";
+import styles from "@/styles/shared/button.module.css";
 
 type ButtonProps = {
   type?: "button" | "submit" | "reset";
@@ -7,17 +7,10 @@ type ButtonProps = {
   onClick?: () => void;
   children: React.ReactNode;
   disabled?: boolean;
-  className?: string; // Para clases adicionales
+  className?: string;
 };
 
-const Button: React.FC<ButtonProps> = ({
-  type = "button",
-  variant = "primary",
-  onClick,
-  children,
-  disabled = false,
-  className = "",
-}) => {
+const Button: React.FC<ButtonProps> = ({ type = "button", variant = "primary", onClick, children, disabled = false, className = "" }) => {
   let variantClass = "";
   switch (variant) {
     case "primary":
@@ -34,12 +27,7 @@ const Button: React.FC<ButtonProps> = ({
   }
 
   return (
-    <button
-      type={type}
-      onClick={onClick}
-      disabled={disabled}
-      className={`${styles.button} ${variantClass} ${disabled ? styles.disabled : ""} ${className}`}
-    >
+    <button type={type} onClick={onClick} disabled={disabled} className={`${styles.button} ${variantClass} ${disabled ? styles.disabled : ""} ${className}`}>
       {children}
     </button>
   );

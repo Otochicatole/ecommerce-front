@@ -1,5 +1,5 @@
 'use client';
-import styles from "./card-product.module.css";
+import styles from "@/styles/catalog/card-product-skeleton.module.css";
 
 export default function CardProductSkeleton() {
   return (

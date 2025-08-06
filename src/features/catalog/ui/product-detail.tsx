@@ -1,5 +1,5 @@
 'use client';
-import Box from "@/components/ui/box";
+import Box from "@/shared/ui/box";
 import VerticalCarousel from "./vertical-carousel";
 import { Product } from "@/types/api/product-response";
 import Image from "next/image";

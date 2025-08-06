@@ -1,4 +1,4 @@
-/* moved from styles directory */
+/* moved from components/ui */
 .button {
   padding: 0.5rem 1rem;
   display: flex;
@@ -14,9 +14,11 @@
   color: #fff;
   background-color: #60a5fa;
 }
+
 .primary:hover {
   background-color: #2563eb;
 }
+
 .primary:focus {
   box-shadow: 0 0 0 2px #3b82f6, 0 0 0 4px #fff;
 }
@@ -25,9 +27,11 @@
   color: #fff;
   background-color: #6b7280;
 }
+
 .secondary:hover {
   background-color: #4b5563;
 }
+
 .secondary:focus {
   box-shadow: 0 0 0 2px #6b7280, 0 0 0 4px #fff;
 }
@@ -36,9 +40,11 @@
   color: #fff;
   background-color: #ef4444;
 }
+
 .danger:hover {
   background-color: #dc2626;
 }
+
 .danger:focus {
   box-shadow: 0 0 0 2px #ef4444, 0 0 0 4px #fff;
 }

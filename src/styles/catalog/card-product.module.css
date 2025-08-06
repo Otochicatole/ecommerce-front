@@ -1,4 +1,4 @@
-/* moved from components/common */
+/* catalog card-product styles */
 .article {
   position: relative;
   display: grid;
@@ -10,12 +10,11 @@
   transition: all 0.3s ease-in-out;
   cursor: pointer;
   height: 550px;
-  overflow: hidden;
   background-color: #ffffff;
 }
 
 .article:hover {
-  box-shadow: 0 6px 8px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 6px 8px rgba(0, 0, 0, .3);
 }
 
 .articleDisabled {
@@ -25,13 +24,12 @@
   border-radius: 16px;
   overflow: hidden;
   max-width: 24rem;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-  transition: all 0.3s ease-in-out;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, .1);
+  transition: all .3s ease-in-out;
   cursor: pointer;
-  overflow: hidden;
-  opacity: 0.5;
+  opacity: .5;
   pointer-events: none;
-  border: #9b1313 solid 2px;
+  border: #9b1313 2px solid;
 }
 
 .offer {
@@ -46,7 +44,7 @@
   letter-spacing: 1px;
   text-transform: uppercase;
   border-radius: 10px;
-  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 3px 10px rgba(0, 0, 0, .2);
   z-index: 10;
 }
 
@@ -60,14 +58,14 @@
 .section {
   display: grid;
   grid-template-rows: auto auto 1fr auto;
-  gap: 0rem;
+  gap: 0;
   padding: 1rem;
 }
 
 .header {
   display: grid;
   grid-template-rows: auto auto;
-  gap: 0.25rem;
+  gap: .25rem;
   overflow: hidden;
   margin-bottom: 115px;
   height: 160px;
@@ -86,7 +84,7 @@
   font-weight: 700;
   color: #18181b;
   margin: 0 0 10px;
-  letter-spacing: -0.5px;
+  letter-spacing: -.5px;
   height: 60px;
   overflow: hidden;
 }
@@ -142,70 +140,11 @@
   display: flex;
   flex-direction: row;
   justify-content: space-between;
-  border-top: rgba(0, 0, 0, 0.05) solid 1px;
+  border-top: rgba(0, 0, 0, .05) 1px solid;
   font-size: 12px;
   padding-top: 12px;
 }
 
 .footerDescription span {
   color: #9b1313;
-}
-
-.skeleton {
-  position: relative;
-  display: grid;
-  grid-template-rows: auto 1fr;
-  border-radius: 16px;
-  overflow: hidden;
-  max-width: 24rem;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-  background-color: #ffffff;
-  animation: pulse 1.5s infinite;
-  height: 550px;
-}
-
-.skeletonImage {
-  width: 100%;
-  height: 15rem;
-  background-color: #eeeeee;
-}
-
-.skeletonContent {
-  display: grid;
-  grid-template-rows: auto auto 1fr;
-  gap: 1rem;
-  padding: 1rem;
-}
-
-.skeletonTitle {
-  width: 70%;
-  height: 1.5rem;
-  background-color: #eeeeee;
-  border-radius: 16px;
-}
-
-.skeletonDescription {
-  width: 100%;
-  height: 1rem;
-  background-color: #eeeeee;
-  border-radius: 16px;
-}
-
-.skeletonFooter {
-  width: 50%;
-  height: 1.5rem;
-  background-color: #eeeeee;
-  border-radius: 16px;
-}
-
-@keyframes pulse {
-  0% {
-    background-color: #eeeeee;
-  }
-  50% {
-    background-color: #ffffff;
-  }
-  100% {
-    background-color: #eeeeee;
-  }
 }

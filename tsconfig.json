@@ -21,6 +21,8 @@
     "types": ["node"],
     "paths": {
       "@catalog/*": ["./src/features/catalog/*"],
+      "@shared/*": ["./src/shared/*"],
+      "@styles/*": ["./src/styles/*"],
       "@/*": ["./src/*"]
     }
   },

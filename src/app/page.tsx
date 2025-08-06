@@ -1,4 +1,4 @@
-import style from "@/components/styles/home.module.css"
+import style from "@/styles/home/home.module.css"
 export default function Page() {
     return (
         <div className="flex flex-col p-3 min-h-[80vh]">

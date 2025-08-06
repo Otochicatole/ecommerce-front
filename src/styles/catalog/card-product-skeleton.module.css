@@ -1,0 +1,61 @@
+/* catalog skeleton styles */
+.skeleton {
+    position: relative;
+    display: grid;
+    grid-template-rows: auto 1fr;
+    border-radius: 16px;
+    overflow: hidden;
+    max-width: 24rem;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, .1);
+    background-color: #ffffff;
+    animation: pulse 1.5s infinite;
+    height: 550px;
+}
+
+.skeletonImage {
+    width: 100%;
+    height: 15rem;
+    background-color: #eeeeee;
+}
+
+.skeletonContent {
+    display: grid;
+    grid-template-rows: auto auto 1fr;
+    gap: 1rem;
+    padding: 1rem;
+}
+
+.skeletonTitle {
+    width: 70%;
+    height: 1.5rem;
+    background-color: #eeeeee;
+    border-radius: 16px;
+}
+
+.skeletonDescription {
+    width: 100%;
+    height: 1rem;
+    background-color: #eeeeee;
+    border-radius: 16px;
+}
+
+.skeletonFooter {
+    width: 50%;
+    height: 1.5rem;
+    background-color: #eeeeee;
+    border-radius: 16px;
+}
+
+@keyframes pulse {
+    0% {
+        background-color: #eeeeee;
+    }
+
+    50% {
+        background-color: #ffffff;
+    }
+
+    100% {
+        background-color: #eeeeee;
+    }
+}

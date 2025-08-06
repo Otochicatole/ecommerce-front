@@ -2,7 +2,7 @@
 import { Product } from "@/types/api/product-response";
 import env from "@/config";
 import Image from "next/image";
-import styles from "./card-product.module.css";
+import styles from "@/styles/catalog/card-product.module.css";
 import { useRouter } from "next/navigation";
 import { BlocksRenderer } from "@strapi/blocks-react-renderer";
 
