@@ -41,13 +41,18 @@ export async function POST(req: NextRequest) {
       metadata: { productId: product.id },
     };
 
+    // Always provide back_urls so MP can redirect back
+    Object.assign(preferencePayload, {
+      back_urls: {
+        success: `${origin}/checkout/success`,
+        failure: `${origin}/checkout/failure`,
+        pending: `${origin}/checkout/pending`,
+      },
+    });
+
+    // Only enable auto_return and notifications on https (prod)
     if (isHttpsOrigin) {
       Object.assign(preferencePayload, {
-        back_urls: {
-          success: `${origin}/checkout/success`,
-          failure: `${origin}/checkout/failure`,
-          pending: `${origin}/checkout/pending`,
-        },
         auto_return: "approved",
         notification_url: `${origin}/api/webhooks/mercadopago`,
       });

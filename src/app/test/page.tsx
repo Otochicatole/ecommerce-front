@@ -51,7 +51,7 @@ export default function TestPage() {
               {loading ? "Preparando..." : "Pagar con Mercado Pago"}
             </button>
           ) : (
-            <Wallet initialization={{ preferenceId }} />
+            <Wallet initialization={{ preferenceId, redirectMode: "self" }} />
           )}
         </div>
     )
