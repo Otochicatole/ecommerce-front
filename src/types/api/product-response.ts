@@ -1,11 +1,12 @@
 import { Pagination } from "./pagination";
+import type { BlocksContent } from "@strapi/blocks-react-renderer";
 
 // Product type
 export interface Product {
     id: number;
     documentId: string;
     name: string;
-    description: any;
+    description: BlocksContent | null;
     price: string;
     offerPrice: string;
     offer: boolean;
@@ -49,7 +50,7 @@ export interface Product {
     url: string;
     previewUrl: string | null;
     provider: string;
-    provider_metadata: Record<string, any> | null;
+    provider_metadata: Record<string, unknown> | null;
     createdAt: string;
     updatedAt: string;
     publishedAt: string;

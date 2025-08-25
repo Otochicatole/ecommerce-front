@@ -4,11 +4,13 @@ import Pagination from "@catalog/ui/pagination";
 import { DEFAULT_PAGE_SIZE } from "@/config";
 
 interface AllPageProps {
-  searchParams: { page?: string };
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 }
 
 export default async function AllProductsPage({ searchParams }: AllPageProps) {
-  const currentPage = parseInt(searchParams.page ?? '1', 10);
+  const { page } = await searchParams;
+  const pageStr = Array.isArray(page) ? page[0] : page;
+  const currentPage = parseInt(pageStr ?? '1', 10);
   const pageSize = DEFAULT_PAGE_SIZE;
   const response = await fetchProducts({ page: currentPage, pageSize });
   const { data: products, meta } = response;
