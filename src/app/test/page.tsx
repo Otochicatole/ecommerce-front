@@ -17,14 +17,30 @@ export default function TestPage() {
     const getPreference = async () => {
         setLoading(true);
         try {
-            const product = {
-                id: "SKU-TEST-001",
-                title: "Zapatillas Negras",
-                quantity: 1,
-                unit_price: 100,
-                currency_id: "ARS",
-            };
-            const { data } = await axios.post("/api/payments/mp/preference", { product });
+            const items = [
+                {
+                    id: "SKU-TEST-001",
+                    title: "Zapatillas Negras",
+                    quantity: 1,
+                    unit_price: 100,
+                    currency_id: "ARS",
+                },
+                {
+                    id: "SKU-TEST-002",
+                    title: "Zapatillas Blancas",
+                    quantity: 1,
+                    unit_price: 100,
+                    currency_id: "ARS",
+                },
+                {
+                    id: "SKU-TEST-003",
+                    title: "Zapatillas Rojas",
+                    quantity: 1,
+                    unit_price: 100,
+                    currency_id: "ARS",
+                }
+            ];
+            const { data } = await axios.post("/api/payments/mp/preference", { items });
             if (data?.preferenceId) setPreferenceId(data.preferenceId);
         } catch (err: unknown) {
             if (axios.isAxiosError(err)) {

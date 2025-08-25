@@ -10,7 +10,7 @@ const ProductSchema = z.object({
   currency_id: z.string().min(3).max(3),
 });
 
-const Schema = z.object({ product: ProductSchema });
+const Schema = z.object({ items: z.array(ProductSchema).min(1) });
 
 export async function POST(req: NextRequest) {
   const origin = process.env.NEXT_PUBLIC_SITE_URL ?? new URL(req.url).origin;
@@ -30,15 +30,14 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Payload inválido" }, { status: 400 });
     }
 
-    const { product } = parsed.data;
-    const items = [product];
-    const external_reference = `order_${product.id}_${Date.now()}`;
+    const { items } = parsed.data;
+    const external_reference = `order_${Date.now()}`;
 
     // 2) Crea la preference (REST oficial de MP)
     const preferencePayload: Record<string, unknown> = {
       items,
       external_reference,
-      metadata: { productId: product.id },
+      metadata: { productIds: items.map(i => i.id) },
     };
 
     // Always provide back_urls so MP can redirect back
