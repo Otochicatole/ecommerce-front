@@ -16,6 +16,7 @@ export async function POST(req: NextRequest) {
   const origin = process.env.NEXT_PUBLIC_SITE_URL ?? new URL(req.url).origin;
   const accessToken = process.env.MP_ACCESS_TOKEN;
   const isHttpsOrigin = /^https:\/\//.test(origin);
+  const envWebhookUrl = process.env.MP_WEBHOOK_URL;
 
   try {
     if (!accessToken) {
@@ -49,11 +50,12 @@ export async function POST(req: NextRequest) {
       },
     });
 
-    // Only enable auto_return and notifications on https (prod)
-    if (isHttpsOrigin) {
+    // Always set notification_url when MP_WEBHOOK_URL is provided; otherwise fallback to https origin
+    const webhookUrl = envWebhookUrl ?? (isHttpsOrigin ? `${origin}/api/webhooks/mercadopago` : undefined);
+    if (webhookUrl) {
       Object.assign(preferencePayload, {
         auto_return: "approved",
-        notification_url: `${origin}/api/webhooks/mercadopago`,
+        notification_url: webhookUrl,
       });
     }
 

@@ -1,142 +1,212 @@
-// app/api/webhooks/mercadopago/route.ts
-import { NextRequest, NextResponse } from "next/server";
+import type { NextRequest } from "next/server";
+import { NextResponse } from "next/server";
 import crypto from "crypto";
 
-type MpWebhookBody = {
-  type?: string; // "payment" | "merchant_order" | others
+export const runtime = "nodejs";
+
+function pickHeaders(headers: Headers) {
+  return {
+    "x-hub-signature-256": headers.get("x-hub-signature-256"),
+    "x-signature": headers.get("x-signature"),
+    "x-request-id": headers.get("x-request-id"),
+    "user-agent": headers.get("user-agent"),
+  } as const;
+}
+
+type MercadoPagoWebhookPayload = {
+  type?: string;
+  topic?: string;
   action?: string;
-  data?: { id?: string };
+  id?: string | number;
+  data?: { id?: string | number } | null;
+  resource?: { id?: string | number } | string | null;
+  [key: string]: unknown;
 };
 
-// Minimal shapes for MP responses (only fields we read)
-interface MpPayment {
-  id: string | number;
-  status: string;
-  external_reference?: string;
-  metadata?: { orderId?: string };
+function isMercadoPagoPayload(value: unknown): value is MercadoPagoWebhookPayload {
+  return typeof value === "object" && value !== null;
 }
 
-interface MpMerchantOrderPayment {
-  id: string | number;
-  status: string;
-}
-
-interface MpMerchantOrder {
-  id: string | number;
-  external_reference?: string;
-  payments?: MpMerchantOrderPayment[];
-}
-
-function parseSignatureHeader(signatureHeader: string | null): { ts: string; v1: string } | null {
-  if (!signatureHeader) return null;
-  // Format: ts=1699999999,v1=hexhash
-  const parts = signatureHeader.split(",").map((s) => s.trim());
-  const kv = Object.fromEntries(parts.map((p) => p.split("=")));
-  if (!kv.ts || !kv.v1) return null;
-  return { ts: kv.ts, v1: kv.v1 };
-}
-
-function verifySignature(headers: Headers, resourceId: string): boolean {
-  const secret = process.env.MP_WEBHOOK_SECRET;
-  if (!secret) return true; // signature verification disabled
-  const signatureHeader = headers.get("x-signature");
-  const parsed = parseSignatureHeader(signatureHeader);
-  if (!parsed) return false;
-
-  const { ts, v1 } = parsed;
-  const content = `${resourceId}:${ts}`;
-  const expected = crypto.createHmac("sha256", secret).update(content).digest("hex");
-  return crypto.timingSafeEqual(Buffer.from(expected), Buffer.from(v1));
-}
-
-async function fetchFromMP<T>(path: string): Promise<{ ok: boolean; status: number; data?: T }> {
-  const token = process.env.MP_ACCESS_TOKEN;
-  if (!token) return { ok: false, status: 500 };
-  const res = await fetch(`https://api.mercadopago.com${path}`, {
-    headers: { Authorization: `Bearer ${token}` },
-    cache: "no-store",
-  });
-  if (!res.ok) return { ok: false, status: res.status };
-  const data = (await res.json()) as T;
-  return { ok: true, status: res.status, data };
-}
-
-export async function POST(req: NextRequest) {
+function timingSafeEqualHex(a: string, b: string): boolean {
   try {
-    const token = process.env.MP_ACCESS_TOKEN;
-    if (!token) return NextResponse.json({ error: "Falta MP_ACCESS_TOKEN" }, { status: 500 });
-
-    const url = new URL(req.url);
-    const search = url.searchParams;
-
-    let body: MpWebhookBody | null = null;
-    try {
-      body = (await req.json()) as MpWebhookBody;
-    } catch {
-      body = null; // allow query-string based notifications
-    }
-
-    // Support both notification formats
-    const type = body?.type ?? search.get("type") ?? search.get("topic") ?? undefined;
-    const id = body?.data?.id ?? search.get("id") ?? undefined;
-
-    if (!type || !id) {
-      return NextResponse.json({ error: "Invalid notification" }, { status: 400 });
-    }
-
-    if (!verifySignature(req.headers, id)) {
-      return NextResponse.json({ error: "Invalid signature" }, { status: 401 });
-    }
-
-    // Resolve to a definitive resource and status
-    let externalReference: string | undefined;
-    let approved = false;
-
-    if (type === "payment") {
-      const p = await fetchFromMP<MpPayment>(`/v1/payments/${id}`);
-      if (!p.ok) return NextResponse.json({ error: "MP payment fetch error" }, { status: 502 });
-      const payment = p.data!;
-      approved = payment.status === "approved";
-      externalReference = payment.external_reference || payment.metadata?.orderId;
-    } else if (type === "merchant_order") {
-      const mo = await fetchFromMP<MpMerchantOrder>(`/merchant_orders/${id}`);
-      if (!mo.ok) return NextResponse.json({ error: "MP order fetch error" }, { status: 502 });
-      const order = mo.data!;
-      externalReference = order.external_reference;
-      approved = Array.isArray(order.payments)
-        ? order.payments.some((p: MpMerchantOrderPayment) => p.status === "approved")
-        : false;
-    } else {
-      // Fallback: try payment, then merchant_order
-      const p = await fetchFromMP<MpPayment>(`/v1/payments/${id}`);
-      if (p.ok) {
-        const payment = p.data!;
-        approved = payment.status === "approved";
-        externalReference = payment.external_reference || payment.metadata?.orderId;
-      } else {
-        const mo = await fetchFromMP<MpMerchantOrder>(`/merchant_orders/${id}`);
-        if (!mo.ok) return NextResponse.json({ error: "MP fetch error" }, { status: 502 });
-        const order = mo.data!;
-        externalReference = order.external_reference;
-        approved = Array.isArray(order.payments)
-          ? order.payments.some((p: MpMerchantOrderPayment) => p.status === "approved")
-          : false;
-      }
-    }
-
-    // TODO: persist the result in your DB here (idempotent upsert by externalReference)
-    console.log("MP webhook processed", { type, id, approved, externalReference });
-
-    return NextResponse.json({ ok: true }, { status: 200 });
-  } catch (err) {
-    console.error("Webhook error", err);
-    return NextResponse.json({ error: "Unexpected error" }, { status: 500 });
+    const bufA = Buffer.from(a, "hex");
+    const bufB = Buffer.from(b, "hex");
+    if (bufA.length !== bufB.length) return false;
+    return crypto.timingSafeEqual(bufA, bufB);
+  } catch {
+    return false;
   }
 }
 
-export async function GET() {
-  // For MP tests that ping with GET
-  return NextResponse.json({ ok: true });
+function verifyHmacSha256(rawBody: string, headerValue: string | null, secret: string): boolean {
+  if (!headerValue) return false;
+  // Accept formats like: "sha256=deadbeef" or plain hex
+  const match = headerValue.match(/sha256=(.+)/i);
+  const providedHex = match ? match[1] : headerValue.trim();
+  const computed = crypto.createHmac("sha256", secret).update(rawBody, "utf8").digest("hex");
+  return timingSafeEqualHex(providedHex, computed);
+}
+
+function extractPaymentId(payload: MercadoPagoWebhookPayload | undefined, searchParams: URLSearchParams): string | null {
+  if (!payload) {
+    return searchParams.get("id");
+  }
+
+  const idFromData = payload.data && typeof payload.data.id !== "undefined" ? String(payload.data.id) : null;
+  if (idFromData) return idFromData;
+
+  const idFromResourceObj = typeof payload.resource === "object" && payload.resource && "id" in payload.resource
+    ? String((payload.resource as { id?: string | number }).id ?? "")
+    : null;
+  if (idFromResourceObj) return idFromResourceObj;
+
+  if (typeof payload.resource === "string" && payload.resource.includes("/v1/payments/")) {
+    const parts = payload.resource.split("/v1/payments/");
+    if (parts[1]) return parts[1].split(/[/?#]/)[0];
+  }
+
+  const idField = typeof payload.id !== "undefined" ? String(payload.id) : null;
+  if (idField) return idField;
+
+  return searchParams.get("id");
+}
+
+export async function POST(request: NextRequest) {
+  try {
+    // Read raw body for potential signature verification later
+    let rawBody = "";
+    try {
+      rawBody = await request.text();
+    } catch (readErr) {
+      // tolerate read errors; continue with empty body
+      console.error("mercadopago-webhook: failed to read body", readErr);
+    }
+
+    let parsedBody: unknown = undefined;
+    try {
+      parsedBody = rawBody ? JSON.parse(rawBody) : undefined;
+    } catch {
+      // keep raw body for debugging; not JSON
+    }
+
+    const headers = pickHeaders(request.headers);
+
+    // Normalize relevant fields sent by Mercado Pago
+    const bodyObj: MercadoPagoWebhookPayload | undefined = isMercadoPagoPayload(parsedBody) ? parsedBody : undefined;
+    const query = request.nextUrl.searchParams;
+
+    const eventType = bodyObj?.type || bodyObj?.topic || bodyObj?.action || query.get("type") || query.get("topic") || "unknown";
+    const dataId = extractPaymentId(bodyObj, query);
+
+    // Optional signature verification
+    const webhookSecret = process.env.MP_WEBHOOK_SECRET;
+    const verified = webhookSecret
+      ? verifyHmacSha256(rawBody, headers["x-hub-signature-256"] || headers["x-signature"], webhookSecret)
+      : null;
+
+    // Structured logging
+    console.log(
+      JSON.stringify(
+        {
+          source: "mercadopago-webhook",
+          method: "POST",
+          path: request.nextUrl.pathname,
+          eventType,
+          dataId,
+          headers,
+          signatureRequired: Boolean(webhookSecret),
+          signatureVerified: verified,
+          body: bodyObj ?? null,
+        },
+        null,
+        2,
+      ),
+    );
+
+    // Enforce signature when a secret is configured
+    if (webhookSecret && verified === false) {
+      console.warn(
+        JSON.stringify(
+          {
+            source: "mercadopago-webhook",
+            message: "Invalid signature, skipping processing",
+            eventType,
+            dataId,
+          },
+          null,
+          2,
+        ),
+      );
+      return NextResponse.json({ received: true, skipped: "invalid-signature" }, { status: 200 });
+    }
+
+    // If we have a payment event with id, fetch details from MP
+    const looksLikePayment = ["payment", "payments"].some((t) => String(eventType).toLowerCase().includes(t));
+    const accessToken = process.env.MP_ACCESS_TOKEN;
+
+    if (looksLikePayment && dataId && accessToken) {
+      try {
+        const resp = await fetch(`https://api.mercadopago.com/v1/payments/${dataId}`, {
+          headers: { Authorization: `Bearer ${accessToken}` },
+          next: { revalidate: 0 },
+        });
+        const payment = await resp.json().catch(() => ({} as unknown));
+        console.log(
+          JSON.stringify(
+            {
+              source: "mercadopago-webhook",
+              message: "Fetched payment",
+              id: dataId,
+              status: payment?.status ?? null,
+              status_detail: payment?.status_detail ?? null,
+              external_reference: payment?.external_reference ?? null,
+              order: payment?.order ?? null,
+            },
+            null,
+            2,
+          ),
+        );
+      } catch (fetchErr) {
+        console.error("mercadopago-webhook: error fetching payment", fetchErr);
+      }
+    }
+
+    // Always acknowledge with 200 quickly; processing can be async later
+    return NextResponse.json({ received: true, eventType, dataId }, { status: 200 });
+  } catch (err) {
+    // Never fail the webhook endpoint; acknowledge and log
+    console.error("mercadopago-webhook: unhandled error", err);
+    return NextResponse.json({ received: true, error: "logged" }, { status: 200 });
+  }
+}
+
+export async function GET(request: NextRequest) {
+  const headers = pickHeaders(request.headers);
+  const query = Object.fromEntries(request.nextUrl.searchParams.entries());
+
+  console.log(
+    JSON.stringify(
+      {
+        source: "mercadopago-webhook",
+        method: "GET",
+        path: request.nextUrl.pathname,
+        query,
+        headers,
+      },
+      null,
+      2,
+    ),
+  );
+
+  return NextResponse.json({ received: true, query }, { status: 200 });
+}
+
+export async function HEAD() {
+  return new NextResponse(null, { status: 200 });
+}
+
+export async function OPTIONS() {
+  return new NextResponse(null, { status: 200 });
 }
 
 
