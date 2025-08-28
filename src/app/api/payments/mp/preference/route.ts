@@ -1,7 +1,26 @@
-// app/api/payments/mp/preference/route.ts
+// Endpoint para crear una Preference de Mercado Pago
+// -----------------------------------------------------------------------------
+// Responsabilidades de este endpoint:
+// - Recibir una lista de items a pagar desde el cliente.
+// - Validar el payload de entrada (estructura y tipos) con Zod.
+// - Construir la `preference` para Checkout Pro/Wallet de MP.
+// - Configurar `back_urls` para redirecciones post-checkout.
+// - Configurar `notification_url` hacia nuestro webhook para recibir updates.
+// - Devolver `preferenceId` al cliente para inicializar el widget de MP.
+//
+// Variables de entorno relevantes:
+// - MP_ACCESS_TOKEN: token privado para crear la preference.
+// - NEXT_PUBLIC_SITE_URL: origin HTTPS del front (opcional; si no, se infiere).
+// - MP_WEBHOOK_URL: override explícito de `notification_url` (recomendado en prod).
+//
+// Notas:
+// - `external_reference` debería mapear a tu id de orden interno.
+// - `auto_return: "approved"` hace que MP redirija automáticamente cuando el pago
+//   resulta aprobado.
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 
+// Esquema de validación para cada producto
 const ProductSchema = z.object({
   id: z.string(),
   title: z.string(),
@@ -10,9 +29,11 @@ const ProductSchema = z.object({
   currency_id: z.string().min(3).max(3),
 });
 
+// Esquema del request: lista de items obligatoria
 const Schema = z.object({ items: z.array(ProductSchema).min(1) });
 
 export async function POST(req: NextRequest) {
+  // Determinamos origin del sitio para redirecciones y webhook por defecto
   const origin = process.env.NEXT_PUBLIC_SITE_URL ?? new URL(req.url).origin;
   const accessToken = process.env.MP_ACCESS_TOKEN;
   const isHttpsOrigin = /^https:\/\//.test(origin);
@@ -25,6 +46,7 @@ export async function POST(req: NextRequest) {
         { status: 500 }
       );
     }
+    // Parseo y validación del body
     const data = await req.json();
     const parsed = Schema.safeParse(data);
     if (!parsed.success) {
@@ -32,16 +54,17 @@ export async function POST(req: NextRequest) {
     }
 
     const { items } = parsed.data;
+    // external_reference debe identificar tu orden internamente
     const external_reference = `order_${Date.now()}`;
 
-    // 2) Crea la preference (REST oficial de MP)
+    // Construimos la payload de la preference
     const preferencePayload: Record<string, unknown> = {
       items,
       external_reference,
       metadata: { productIds: items.map(i => i.id) },
     };
 
-    // Always provide back_urls so MP can redirect back
+    // back_urls para redirecciones post-checkout
     Object.assign(preferencePayload, {
       back_urls: {
         success: `${origin}/checkout/success`,
@@ -50,7 +73,7 @@ export async function POST(req: NextRequest) {
       },
     });
 
-    // Always set notification_url when MP_WEBHOOK_URL is provided; otherwise fallback to https origin
+    // notification_url: si hay MP_WEBHOOK_URL lo usamos; sino, si el origin es https, usamos el webhook local
     const webhookUrl = envWebhookUrl ?? (isHttpsOrigin ? `${origin}/api/webhooks/mercadopago` : undefined);
     if (webhookUrl) {
       Object.assign(preferencePayload, {

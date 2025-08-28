@@ -1,10 +1,38 @@
+// Webhook de Mercado Pago
+// -----------------------------------------------------------------------------
+// Responsabilidades de este endpoint:
+// - Recibir notificaciones HTTP (POST) enviadas por Mercado Pago hacia
+//   `notification_url` configurada en la preference o en el panel de MP.
+// - Leer el body crudo (sin parsear) para poder validar firma HMAC si hay
+//   una clave secreta configurada.
+// - Validar autenticidad de la notificación (opcional) usando HMAC-SHA256 con
+//   el secreto `MP_WEBHOOK_SECRET` y el header `x-hub-signature-256` o `x-signature`.
+// - Extraer robustamente el `paymentId` (MP puede mandarlo en `data.id`,
+//   `resource.id`, `resource` como string o en query string).
+// - Si el evento parece de pago, consultar `GET /v1/payments/{id}` para obtener
+//   detalles y loguear el estado (`status`, `status_detail`, `external_reference`).
+// - Responder SIEMPRE 200 para que MP considere entregada la notificación
+//   (aún si se descarta por firma inválida). El procesamiento extra puede ser
+//   asincrónico en otra capa si se necesita.
+//
+// Variables de entorno relevantes:
+// - MP_ACCESS_TOKEN: requerido para consultar pagos en la API de MP.
+// - MP_WEBHOOK_SECRET: opcional, si está presente se exige firma válida.
+//
+// Formas típicas del payload de MP (ejemplos simplificados):
+// - { "type": "payment", "data": { "id": "123" } }
+// - { "topic": "payment", "resource": "/v1/payments/123" }
+// - { "action": "payment.created", "id": 123 }
+// MP también puede incluir parámetros en la query (fallback), p. ej. `?type=payment&id=123`.
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 import crypto from "crypto";
 
+// Forzamos runtime Node para disponer de APIs como crypto y asegurar compatibilidad
 export const runtime = "nodejs";
 
 function pickHeaders(headers: Headers) {
+  // Seleccionamos solo los headers relevantes para trazabilidad y firma
   return {
     "x-hub-signature-256": headers.get("x-hub-signature-256"),
     "x-signature": headers.get("x-signature"),
@@ -14,6 +42,7 @@ function pickHeaders(headers: Headers) {
 }
 
 type MercadoPagoWebhookPayload = {
+  // MP puede enviar distintos campos según el tipo de evento
   type?: string;
   topic?: string;
   action?: string;
@@ -24,10 +53,12 @@ type MercadoPagoWebhookPayload = {
 };
 
 function isMercadoPagoPayload(value: unknown): value is MercadoPagoWebhookPayload {
+  // Guard simple para evitar acceder a propiedades de null/undefined
   return typeof value === "object" && value !== null;
 }
 
 function timingSafeEqualHex(a: string, b: string): boolean {
+  // Comparación segura en tiempo constante para hashes hexadecimales
   try {
     const bufA = Buffer.from(a, "hex");
     const bufB = Buffer.from(b, "hex");
@@ -39,6 +70,8 @@ function timingSafeEqualHex(a: string, b: string): boolean {
 }
 
 function verifyHmacSha256(rawBody: string, headerValue: string | null, secret: string): boolean {
+  // Verifica firma HMAC-SHA256 del body crudo con el secreto configurado en MP
+  // Formatos aceptados: "sha256=<hex>" o directamente el hex
   if (!headerValue) return false;
   // Accept formats like: "sha256=deadbeef" or plain hex
   const match = headerValue.match(/sha256=(.+)/i);
@@ -48,6 +81,7 @@ function verifyHmacSha256(rawBody: string, headerValue: string | null, secret: s
 }
 
 function extractPaymentId(payload: MercadoPagoWebhookPayload | undefined, searchParams: URLSearchParams): string | null {
+  // Extrae el paymentId desde múltiples variantes que puede enviar MP
   if (!payload) {
     return searchParams.get("id");
   }
@@ -73,12 +107,12 @@ function extractPaymentId(payload: MercadoPagoWebhookPayload | undefined, search
 
 export async function POST(request: NextRequest) {
   try {
-    // Read raw body for potential signature verification later
+    // Leemos el body crudo para poder validar firma HMAC correctamente
     let rawBody = "";
     try {
       rawBody = await request.text();
     } catch (readErr) {
-      // tolerate read errors; continue with empty body
+      // Toleramos errores de lectura; continuamos con body vacío
       console.error("mercadopago-webhook: failed to read body", readErr);
     }
 
@@ -86,25 +120,25 @@ export async function POST(request: NextRequest) {
     try {
       parsedBody = rawBody ? JSON.parse(rawBody) : undefined;
     } catch {
-      // keep raw body for debugging; not JSON
+      // Si no es JSON, dejamos el body crudo para debugging
     }
 
     const headers = pickHeaders(request.headers);
 
-    // Normalize relevant fields sent by Mercado Pago
+    // Normalizamos campos de interés del payload
     const bodyObj: MercadoPagoWebhookPayload | undefined = isMercadoPagoPayload(parsedBody) ? parsedBody : undefined;
     const query = request.nextUrl.searchParams;
 
     const eventType = bodyObj?.type || bodyObj?.topic || bodyObj?.action || query.get("type") || query.get("topic") || "unknown";
     const dataId = extractPaymentId(bodyObj, query);
 
-    // Optional signature verification
+    // Verificación de firma opcional si existe MP_WEBHOOK_SECRET
     const webhookSecret = process.env.MP_WEBHOOK_SECRET;
     const verified = webhookSecret
       ? verifyHmacSha256(rawBody, headers["x-hub-signature-256"] || headers["x-signature"], webhookSecret)
       : null;
 
-    // Structured logging
+    // Logging estructurado para observabilidad y auditoría
     console.log(
       JSON.stringify(
         {
@@ -123,7 +157,7 @@ export async function POST(request: NextRequest) {
       ),
     );
 
-    // Enforce signature when a secret is configured
+    // Si hay secreto configurado y la firma no valida, no procesamos el evento
     if (webhookSecret && verified === false) {
       console.warn(
         JSON.stringify(
@@ -140,7 +174,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ received: true, skipped: "invalid-signature" }, { status: 200 });
     }
 
-    // If we have a payment event with id, fetch details from MP
+    // Si el evento es de pago y tenemos id, consultamos detalles del pago en MP
     const looksLikePayment = ["payment", "payments"].some((t) => String(eventType).toLowerCase().includes(t));
     const accessToken = process.env.MP_ACCESS_TOKEN;
 
@@ -171,10 +205,10 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // Always acknowledge with 200 quickly; processing can be async later
+    // Siempre respondemos 200 rápido; el procesamiento extra puede ser asíncrono
     return NextResponse.json({ received: true, eventType, dataId }, { status: 200 });
   } catch (err) {
-    // Never fail the webhook endpoint; acknowledge and log
+    // Nunca fallamos el endpoint; registramos y confirmamos recepción
     console.error("mercadopago-webhook: unhandled error", err);
     return NextResponse.json({ received: true, error: "logged" }, { status: 200 });
   }
