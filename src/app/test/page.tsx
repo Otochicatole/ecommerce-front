@@ -38,6 +38,13 @@ export default function TestPage() {
                     quantity: 1,
                     unit_price: 100,
                     currency_id: "ARS",
+                },
+                {
+                    id: "SKU-TEST-004",
+                    title: "Zapatillas Verdes",
+                    quantity: 1,
+                    unit_price: 100,
+                    currency_id: "ARS",
                 }
             ];
             const { data } = await axios.post("/api/payments/mp/preference", { items });
@@ -58,17 +65,17 @@ export default function TestPage() {
         } finally {
             setLoading(false);
         }
-      };
-    
-      return (
+    };
+
+    return (
         <div className="space-y-3">
-          {!preferenceId ? (
-            <button onClick={getPreference} disabled={loading} className="btn-primary">
-              {loading ? "Preparando..." : "Pagar con Mercado Pago"}
-            </button>
-          ) : (
-            <Wallet initialization={{ preferenceId, redirectMode: "self" }} />
-          )}
+            {!preferenceId ? (
+                <button onClick={getPreference} disabled={loading} className="btn-primary">
+                    {loading ? "Preparando..." : "Pagar con Mercado Pago"}
+                </button>
+            ) : (
+                <Wallet initialization={{ preferenceId, redirectMode: "self" }} />
+            )}
         </div>
     )
 }

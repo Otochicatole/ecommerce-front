@@ -1,14 +1,19 @@
 'use client';
 import Link from "next/link";
 import { useEffect } from "react";
+import { useCart } from "@/shared/cart/cart-context";
 
 export default function CheckoutSuccessPage() {
+  const { clearCart } = useCart();
+
   useEffect(() => {
+    // Clear cart on success to avoid duplicates after returning
+    try { clearCart(); } catch {}
     const timer = setTimeout(() => {
-      window.location.assign("/"); // Redirect after 5 seconds
+      window.location.assign("/");
     }, 5000);
     return () => clearTimeout(timer);
-  }, []);
+  }, [clearCart]);
 
   return (
     <div style={{ padding: 24 }}>

@@ -4,17 +4,38 @@ import { useCart } from '@/shared/cart/cart-context';
 import Image from 'next/image';
 import env from '@/config';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { useEffect, useState } from 'react';
+import { Wallet, initMercadoPago } from '@mercadopago/sdk-react';
+import { createPreferenceFromCart } from './actions';
 
 export default function CheckoutPage() {
-  const { items, totalPrice, clearCart } = useCart();
-  const router = useRouter();
+  const { items, totalPrice } = useCart();
+  const [preferenceId, setPreferenceId] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
 
-  const handleConfirm = () => {
-    // placeholder – real integration with payment would go here
-    alert('Gracias por tu compra');
-    clearCart();
-    router.push('/');
+  useEffect(() => {
+    const publicKey = process.env.NEXT_PUBLIC_MP_PUBLIC_KEY as string | undefined;
+    if (publicKey) initMercadoPago(publicKey);
+  }, []);
+
+  const createPreference = async () => {
+    if (items.length === 0 || loading) return;
+    setLoading(true);
+    try {
+      const cartPayload = items.map(({ product, size, quantity }) => ({
+        productId: product.id,
+        documentId: product.documentId,
+        size,
+        quantity,
+      }));
+
+      const { preferenceId } = await createPreferenceFromCart(cartPayload);
+      setPreferenceId(preferenceId);
+    } catch (err: unknown) {
+      console.error('Failed to create preference', err);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -48,9 +69,19 @@ export default function CheckoutPage() {
               <span>${totalPrice.toLocaleString('en-US')}</span>
             </div>
 
-            <button onClick={handleConfirm} className="w-full bg-blue-600 text-white py-3 rounded-lg shadow hover:bg-blue-700 active:scale-95 transition-transform">
-              Confirmar compra
-            </button>
+            {!preferenceId ? (
+              <button
+                onClick={createPreference}
+                disabled={loading}
+                className="w-full bg-blue-600 text-white py-3 rounded-lg shadow hover:bg-blue-700 active:scale-95 transition-transform disabled:opacity-50"
+              >
+                {loading ? 'Preparando...' : 'Pagar con Mercado Pago'}
+              </button>
+            ) : (
+              <div className="pt-2">
+                <Wallet initialization={{ preferenceId, redirectMode: 'self' }} />
+              </div>
+            )}
           </>
         )}
       </Box>
