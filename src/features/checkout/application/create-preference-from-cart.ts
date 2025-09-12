@@ -1,3 +1,5 @@
+'use server';
+
 // server action para crear una preference de Mercado Pago a partir del carrito del cliente.
 // responsabilidades:
 // - recibir items del carrito desde el cliente (documentId, productId, size, quantity)
@@ -6,7 +8,6 @@
 // - construir los items de Mercado Pago usando precios verificados del lado servidor
 // - loguear la verificación para auditoría
 // - llamar a la ruta interna que crea la preference y devolver el preferenceId
-'use server';
 
 import { fetchProductByDocumentId } from '@/features/catalog/services/products';
 import { headers } from 'next/headers';

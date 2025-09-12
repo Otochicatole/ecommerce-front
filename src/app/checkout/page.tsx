@@ -6,7 +6,7 @@ import env from '@/config';
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { Wallet, initMercadoPago } from '@mercadopago/sdk-react';
-import { createPreferenceFromCart } from './actions';
+import { createPreferenceFromCart } from '@/features/checkout/application/create-preference-from-cart';
 
 export default function CheckoutPage() {
   const { items, totalPrice } = useCart();
