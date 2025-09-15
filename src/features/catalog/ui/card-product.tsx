@@ -6,7 +6,7 @@ import styles from "@/styles/catalog/card-product.module.css";
 import { useRouter } from "next/navigation";
 import { BlocksRenderer } from "@strapi/blocks-react-renderer";
 
-export default function CardProduct({ data }: { data: Product }) {
+export default function CardProduct({ data, isList }: { data: Product, isList?: boolean }) {
   const router = useRouter();
   const URL = env.strapiUrl;
 
@@ -21,15 +21,19 @@ export default function CardProduct({ data }: { data: Product }) {
   const imageUrl = mainImage?.url ? `${URL}${mainImage.url}` : "/nullimg.webp";
   const imageAlt = mainImage?.alternativeText || "Producto";
 
+  const articleClass = isList
+    ? (data.show ? styles.articleList : styles.articleListDisabled)
+    : (data.show ? styles.article : styles.articleDisabled);
+
   return (
-    <article onClick={handleClick} className={data.show ? styles.article : styles.articleDisabled}>
+    <article onClick={handleClick} className={articleClass}>
       {data.offer && <span className={styles.offer}>Oferta Exclusiva</span>}
       <figure className={styles.figure}>
         <Image className="object-cover w-fit h-fit" loading="lazy" src={imageUrl} alt={imageAlt} width={400} height={400} unoptimized />
       </figure>
       <section className={styles.section}>
         <div className={styles.header}>
-          <div className={styles["header-texto"]}>
+          <div className={styles["header-text"]}>
             <h1 className={styles.title}>{data.name}</h1>
             <div className={styles.desc}>
               {data?.description ? <BlocksRenderer content={data.description} /> : <p>No description available.</p>}
