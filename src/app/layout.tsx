@@ -5,6 +5,7 @@ import NavBar from "@/shared/layout/nav-bar";
 import { CartProvider } from "@/shared/cart/cart-context";
 import CartAside from "@/shared/cart/cart-aside";
 import { Toaster } from "react-hot-toast";
+import { AdminAuthProvider } from "@/shared/auth/admin-auth-context";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -29,32 +30,34 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={`${geistSans.variable} ${geistMono.variable}`}>
-        <CartProvider>
-          <NavBar />
-          <CartAside />
-          <main className="mt-[106px]">
-            {children}
-          </main>
-          <Toaster
-            position="bottom-right"
-            toastOptions={{
-              duration: 2000,
-              style: {
-                padding: '16px 24px',
-                fontSize: '1rem',
-                background: '#1e77af',
-                color: '#fff',
-                borderRadius: '12px',
-              },
-              success: {
-                iconTheme: {
-                  primary: '#10b981',
-                  secondary: '#d1fae5',
+        <AdminAuthProvider>
+          <CartProvider>
+            <NavBar />
+            <CartAside />
+            <main className="mt-[106px]">
+              {children}
+            </main>
+            <Toaster
+              position="bottom-right"
+              toastOptions={{
+                duration: 2000,
+                style: {
+                  padding: '16px 24px',
+                  fontSize: '1rem',
+                  background: '#1e77af',
+                  color: '#fff',
+                  borderRadius: '12px',
                 },
-              },
-            }}
-          />
-        </CartProvider>
+                success: {
+                  iconTheme: {
+                    primary: '#10b981',
+                    secondary: '#d1fae5',
+                  },
+                },
+              }}
+            />
+          </CartProvider>
+        </AdminAuthProvider>
       </body>
     </html>
   );

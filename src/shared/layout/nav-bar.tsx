@@ -1,3 +1,6 @@
+// Barra de navegación principal
+// - Muestra categorías, links, carrito
+// - Si sos admin: muestra acceso a /admin y botón de logout
 'use client';
 import { ShoppingCart } from 'lucide-react';
 import { useCart } from '@/shared/cart/cart-context';
@@ -6,6 +9,8 @@ import { CategoryAttributes } from '@/types/api/category-response';
 import { ChevronDown } from 'lucide-react';
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
+import { useAdminAuth } from '@/shared/auth/admin-auth-context';
+import { useRouter } from 'next/navigation';
 import SearchBar from '@/shared/search/search-bar';
 
 const links = [
@@ -16,6 +21,8 @@ const links = [
 
 export default function NavBar() {
   const [dropdownLinksCategories, setDropdownLinksCategories] = useState<CategoryAttributes[]>([]);
+  const { isAdmin, logout, loading } = useAdminAuth();
+  const router = useRouter();
 
   useEffect(() => {
     const fetchCategories = async () => {
@@ -69,15 +76,42 @@ export default function NavBar() {
         </div>
       </div>
 
-      {/* Cart button */}
-      <button onClick={toggleCart} className='relative p-3 hover:bg-gray-100 rounded-lg active:scale-95 transition-transform'>
-        <ShoppingCart size={24} />
-        {totalItems > 0 && (
-          <span className='absolute -top-1 -right-1 bg-rose-600 text-white text-[10px] leading-none px-1.5 py-0.5 rounded-full'>
-            {totalItems}
-          </span>
+      {/* Right section: admin actions + cart */}
+      <div className='flex items-center gap-2'>
+        {!loading && (
+          isAdmin ? (
+            <div className='flex items-center gap-2'>
+              <Link
+                href='/admin/stock'
+                className='px-3 py-2 text-sm border rounded-md hover:bg-gray-100'
+              >
+                Admin
+              </Link>
+              <button
+                onClick={async () => { await logout(); router.replace('/'); }}
+                className='px-3 py-2 text-sm border rounded-md hover:bg-gray-100'
+              >
+                Logout
+              </button>
+            </div>
+          ) : (
+            <Link
+              href={'/login?redirect=' + encodeURIComponent('/admin/stock')}
+              className='px-3 py-2 text-sm border rounded-md hover:bg-gray-100'
+            >
+              Admin login
+            </Link>
+          )
         )}
-      </button>
+        <button onClick={toggleCart} className='relative p-3 hover:bg-gray-100 rounded-lg active:scale-95 transition-transform'>
+          <ShoppingCart size={24} />
+          {totalItems > 0 && (
+            <span className='absolute -top-1 -right-1 bg-rose-600 text-white text-[10px] leading-none px-1.5 py-0.5 rounded-full'>
+              {totalItems}
+            </span>
+          )}
+        </button>
+      </div>
     </nav>
   );
 }
