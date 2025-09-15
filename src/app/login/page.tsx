@@ -14,7 +14,8 @@ export default function Page() {
   const [error, setError] = useState<string | null>(null);
   const router = useRouter();
   const searchParams = useSearchParams();
-  const redirect = searchParams.get("redirect") || "/admin/stock";
+  const qp = searchParams.get("redirect") || "/admin/stock";
+  const redirect = qp.startsWith("/") ? qp : "/admin/stock";
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();

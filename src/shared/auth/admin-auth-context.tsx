@@ -63,6 +63,28 @@ export function AdminAuthProvider({ children }: { children: React.ReactNode }) {
     };
   }, [pathname, refresh]);
 
+  // Cierra sesión y limpia estado local
+  const logout = useCallback(async () => {
+    await fetch("/api/admin/logout", { method: "POST" });
+    setUser(null);
+  }, []);
+
+  // Idle timeout: cierra sesión tras 15 minutos sin interacción
+  useEffect(() => {
+    let timer: ReturnType<typeof setTimeout> | undefined;
+    const reset = () => {
+      if (timer) clearTimeout(timer);
+      timer = setTimeout(() => { void logout(); }, 15 * 60 * 1000);
+    };
+    const events = ['click','keydown','mousemove','scroll','focus'];
+    events.forEach(e => window.addEventListener(e, reset));
+    reset();
+    return () => {
+      if (timer) clearTimeout(timer);
+      events.forEach(e => window.removeEventListener(e, reset));
+    };
+  }, [logout]);
+
   // Realiza login (server setea cookie HttpOnly) y refresca estado
   const login = useCallback(async ({ email, password }: { email: string; password: string }) => {
     const res = await fetch("/api/admin/login", {
@@ -77,11 +99,6 @@ export function AdminAuthProvider({ children }: { children: React.ReactNode }) {
     return false;
   }, [refresh]);
 
-  // Cierra sesión y limpia estado local
-  const logout = useCallback(async () => {
-    await fetch("/api/admin/logout", { method: "POST" });
-    setUser(null);
-  }, []);
 
   // Si existe usuario proveniente de /admin/me, se asume admin
   const isAdmin = useMemo(() => {

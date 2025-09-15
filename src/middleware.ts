@@ -1,11 +1,12 @@
 // Middleware de Edge
 // - Reescribe la ruta pública de webhooks a la API interna
 // - Protege todo /admin
-//   1) Si no hay cookie admin_token -> redirige a /login
+//   1) Si no hay cookie de admin -> redirige a /login
 //   2) Si hay cookie, valida contra /api/admin/me con las cookies del request
 //      y solo deja pasar si authenticated === true
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
+import { ADMIN_COOKIE_NAME } from "@/shared/auth/cookie";
 
 export async function middleware(request: NextRequest) {
   const pathname = request.nextUrl.pathname;
@@ -19,7 +20,7 @@ export async function middleware(request: NextRequest) {
 
   // Protección de la sección admin: requiere cookie y validación del token
   if (pathname.startsWith("/admin")) {
-    const token = request.cookies.get("admin_token")?.value;
+    const token = request.cookies.get(ADMIN_COOKIE_NAME)?.value;
     if (!token) {
       const url = request.nextUrl.clone();
       url.pathname = "/login";

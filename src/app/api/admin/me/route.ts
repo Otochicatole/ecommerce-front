@@ -1,7 +1,11 @@
-// Devuelve si el admin está autenticado y su usuario
+// Endpoint de introspección de sesión de admin
+// - Lee el token de la cookie HttpOnly
+// - Valida contra Strapi (/admin/users/me)
+// - Si falla, limpia la cookie y responde authenticated: false
 import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import http from "@/config/http";
+import { ADMIN_COOKIE_NAME } from "@/shared/auth/cookie";
 
 interface AdminMeResponse {
   id?: number | string;
@@ -13,7 +17,7 @@ interface AdminMeResponse {
 export async function GET() {
   try {
     const cookieStore = await cookies();
-    const token = cookieStore.get("admin_token")?.value;
+    const token = cookieStore.get(ADMIN_COOKIE_NAME)?.value;
     if (!token) {
       return NextResponse.json({ authenticated: false }, { status: 200 });
     }
@@ -27,7 +31,7 @@ export async function GET() {
   } catch {
     // If token invalid/expired, clear cookie and respond unauthenticated
     const cookieStore = await cookies();
-    cookieStore.set("admin_token", "", { path: "/", maxAge: 0 });
+    cookieStore.set(ADMIN_COOKIE_NAME, "", { path: "/", maxAge: 0 });
     return NextResponse.json({ authenticated: false }, { status: 200 });
   }
 }

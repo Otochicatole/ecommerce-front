@@ -1,13 +1,15 @@
 // Guard de servidor para el área /admin
-// Valida en cada request que el token de admin siga siendo válido
+// - Evita renderizar contenido admin si el token no es válido
+// - Valida en cada request contra Strapi
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import env from "@/config";
+import { ADMIN_COOKIE_NAME } from "@/shared/auth/cookie";
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
   const cookieStore = await cookies();
   // Leemos la cookie firmada HttpOnly que guardamos en el login
-  const token = cookieStore.get("admin_token")?.value;
+  const token = cookieStore.get(ADMIN_COOKIE_NAME)?.value;
 
   if (!token) {
     redirect("/login?redirect=" + encodeURIComponent("/admin/stock"));
@@ -22,12 +24,12 @@ export default async function AdminLayout({ children }: { children: React.ReactN
     });
     if (!res.ok) {
       // clear invalid cookie and redirect
-      cookieStore.set("admin_token", "", { path: "/", maxAge: 0 });
+      cookieStore.set(ADMIN_COOKIE_NAME, "", { path: "/", maxAge: 0 });
       redirect("/login?redirect=" + encodeURIComponent("/admin/stock"));
     }
   } catch {
     // invalid/expired token
-    cookieStore.set("admin_token", "", { path: "/", maxAge: 0 });
+    cookieStore.set(ADMIN_COOKIE_NAME, "", { path: "/", maxAge: 0 });
     redirect("/login?redirect=" + encodeURIComponent("/admin/stock"));
   }
 

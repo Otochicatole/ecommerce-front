@@ -1,10 +1,14 @@
 // Login de administrador
-// Proxy a Strapi Admin API y setea cookie HttpOnly con el token
+// - Recibe credenciales desde el cliente
+// - Llama al endpoint de Strapi Admin API (/admin/login)
+// - Si es exitoso, setea una cookie HttpOnly endurecida con el token
+// - Devuelve un shape mínimo para la UI
 import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import http from "@/config/http";
 import axios from "axios";
 import { z } from "zod";
+import { ADMIN_COOKIE_NAME, ADMIN_COOKIE_OPTS } from "@/shared/auth/cookie";
 
 const loginSchema = z.object({
   email: z.string().email(),
@@ -37,13 +41,7 @@ export async function POST(request: Request) {
 
     // Guardamos cookie segura HttpOnly para que el cliente no pueda leerla
     const cookieStore = await cookies();
-    cookieStore.set("admin_token", token, {
-      httpOnly: true,
-      sameSite: "strict",
-      secure: process.env.NODE_ENV === "production",
-      path: "/",
-      maxAge: 60 * 60 * 8,
-    });
+    cookieStore.set(ADMIN_COOKIE_NAME, token, ADMIN_COOKIE_OPTS);
 
     return NextResponse.json({ ok: true, user });
   } catch (error: unknown) {
