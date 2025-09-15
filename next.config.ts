@@ -21,11 +21,8 @@ const cspDev = [
   "default-src 'self'",
   "img-src 'self' data: https: http:",
   "style-src 'self' 'unsafe-inline'",
-  // Allow MP SDK and bundles in dev
   "script-src 'self' 'unsafe-inline' 'unsafe-eval' blob: https://sdk.mercadopago.com https://http2.mlstatic.com",
-  // Allow MP APIs and HMR
   "connect-src 'self' http: https: ws: wss: https://api.mercadopago.com",
-  // Allow embedding MP frames
   "frame-src 'self' https://sdk.mercadopago.com https://*.mercadopago.com https://*.mlstatic.com",
   "frame-ancestors 'none'",
   "base-uri 'self'",
@@ -40,11 +37,8 @@ const cspProd = [
   "default-src 'self'",
   "img-src 'self' data: https:",
   "style-src 'self' 'unsafe-inline'",
-  // Allow MP SDK + bundles in production without enabling inline/eval
   "script-src 'self' https://sdk.mercadopago.com https://http2.mlstatic.com",
-  // Allow MP APIs
   "connect-src 'self' https: https://api.mercadopago.com",
-  // Allow embedding MP frames
   "frame-src 'self' https://sdk.mercadopago.com https://*.mercadopago.com https://*.mlstatic.com",
   "frame-ancestors 'none'",
   "base-uri 'self'",
