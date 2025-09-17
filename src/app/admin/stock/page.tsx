@@ -1,7 +1,6 @@
 import { fetchProducts } from "@catalog/services/products";
-import Pagination from "@catalog/ui/pagination";
 import { DEFAULT_PAGE_SIZE } from "@/config";
-import ProductList from "@catalog/ui/product-list";
+import StockContent from "@catalog/ui/stock-content";
 
 interface AllPageProps {
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
@@ -17,9 +16,6 @@ export default async function StockPage({ searchParams }: AllPageProps) {
   const pageCount = meta.pagination.pageCount;
 
   return (
-    <div className="flex flex-col min-h-[88vh] justify-between">
-      <ProductList products={products} />
-      <Pagination currentPage={currentPage} pageCount={pageCount} basePath="/admin/stock" />
-    </div>
+    <StockContent products={products} currentPage={currentPage} pageCount={pageCount} />
   );
 }

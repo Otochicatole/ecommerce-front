@@ -21,9 +21,7 @@ export async function fetchProducts({ page = 1, pageSize = 20, offer, category }
   return data;
 }
 
-// Legacy helper used by search bar – fetches a large page to simulate "all products"
 export async function fetchAllProducts(): Promise<ApiResponseAllProducts> {
-  // Strapi caps pageSize; adjust if needed
   return fetchProducts({ page: 1, pageSize: 100 });
 }
 
@@ -39,4 +37,9 @@ export async function fetchProductByDocumentId(documentId: string): Promise<ApiR
 
   const { data } = await http.get<ApiResponseAllProducts>(`/api/products?${query.toString()}`);
   return { data: data.data[0], meta: data.meta } as unknown as ApiResponseProductById;
+}
+
+export async function fetchProductsBySearch(search: string): Promise<ApiResponseAllProducts> {
+  const { data } = await http.get<ApiResponseAllProducts>(`/api/products?filters[name][$contains]=${search}&populate=*`);
+  return data;
 }
