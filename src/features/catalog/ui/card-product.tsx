@@ -5,16 +5,23 @@ import Image from "next/image";
 import styles from "@/styles/catalog/card-product.module.css";
 import { useRouter } from "next/navigation";
 import { BlocksRenderer } from "@strapi/blocks-react-renderer";
+import { useAdminAuth } from "@shared/auth/admin-auth-context";
 
 export default function CardProduct({ data, isList }: { data: Product, isList?: boolean }) {
   const router = useRouter();
   const URL = env.strapiUrl;
+  // isAdmin
+  const { isAdmin } = useAdminAuth();
 
   const fixPrice = data.price.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
   const fixOfferPrice = data.offerPrice.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
 
   const handleClick = () => {
-    router.push(`/product/${data.documentId}`);
+    if (isAdmin) {
+      router.push(`/admin/edit/product/${data.documentId}`);
+    } else {
+      router.push(`/product/${data.documentId}`);
+    }
   };
 
   const mainImage = data.media?.[0];
