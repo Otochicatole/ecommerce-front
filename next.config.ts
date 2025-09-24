@@ -19,7 +19,7 @@ try {
 //   y el HMR los necesitan para funcionar. También habilitamos ws/wss.
 const cspDev = [
   "default-src 'self'",
-  "img-src 'self' data: https: http:",
+  "img-src 'self' data: blob: https: http:",
   "style-src 'self' 'unsafe-inline'",
   "script-src 'self' 'unsafe-inline' 'unsafe-eval' blob: https://sdk.mercadopago.com https://http2.mlstatic.com",
   "connect-src 'self' http: https: ws: wss: https://api.mercadopago.com",
@@ -35,7 +35,7 @@ const cspDev = [
 // - connect-src limitado a https en producción.
 const cspProd = [
   "default-src 'self'",
-  "img-src 'self' data: https:",
+  "img-src 'self' data: blob: https:",
   "style-src 'self' 'unsafe-inline'",
   "script-src 'self' https://sdk.mercadopago.com https://http2.mlstatic.com",
   "connect-src 'self' https: https://api.mercadopago.com",
@@ -62,6 +62,10 @@ const nextConfig: NextConfig = {
     remotePatterns: STRAPI_HOST && STRAPI_PROTO ? [
       { protocol: STRAPI_PROTO, hostname: STRAPI_HOST, pathname: "/**" },
     ] : [],
+  },
+  // Aumentamos el límite de payload para Server Actions (subida de archivos)
+  serverActions: {
+    bodySizeLimit: '25mb',
   },
   // Aplica los headers a todas las rutas de la app
   async headers() {

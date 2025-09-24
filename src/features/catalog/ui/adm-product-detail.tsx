@@ -5,19 +5,27 @@ import { Product } from "@/types/api/product-response";
 import Image from "next/image";
 import { BlocksRenderer } from "@strapi/blocks-react-renderer";
 import type { BlocksContent } from "@strapi/blocks-react-renderer";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import env from "@/config";
+import { UploadCloud } from "lucide-react";
 
 interface ProductDetailProps {
     product: Product;
     saveAction?: (formData: FormData) => Promise<unknown>;
+    uploadMediaAction?: (formData: FormData) => Promise<{ ids: number[] }>;
+    setMediaAction?: (formData: FormData) => Promise<unknown>;
+    deleteMediaAction?: (formData: FormData) => Promise<{ deleted: number }>;
+    sizesOptions?: Array<{ id: number; documentId?: string; size: string }>;
+    typeOptions?: Array<{ id: number; documentId?: string; type: string }>;
 }
 
-export default function AdmProductDetail({ product, saveAction }: ProductDetailProps) {
+export default function AdmProductDetail({ product, saveAction, uploadMediaAction, setMediaAction, deleteMediaAction, sizesOptions = [], typeOptions = [] }: ProductDetailProps) {
     const initialImage = product.media?.[0]?.url ? `${env.strapiUrl}${product.media[0].url}` : "/nullimg.webp";
     const [imageViewUrl, setImageViewUrl] = useState(initialImage);
     const router = useRouter();
+    const [keptMediaIds, setKeptMediaIds] = useState<string[]>(() => (product.media ?? []).map(m => String(m.id)));
+    const [newFiles, setNewFiles] = useState<File[]>([]);
 
     const [name, setName] = useState(product.name ?? "");
     const [price, setPrice] = useState<string>(product.price?.toString() ?? "");
@@ -26,9 +34,21 @@ export default function AdmProductDetail({ product, saveAction }: ProductDetailP
     const [stock, setStock] = useState<string>(product.stock?.toString() ?? "");
     const [show, setShow] = useState<boolean>(Boolean(product.show));
     const [isSaving, setIsSaving] = useState(false);
+    const [selectedSizes, setSelectedSizes] = useState<string[]>(() => (product.sizes ?? []).map(s => s.documentId ?? String(s.id)));
+    const [selectedTypes, setSelectedTypes] = useState<string[]>(() => (product.type_products ?? []).map(t => t.documentId ?? String(t.id)));
+    const filePickerRef = useRef<HTMLInputElement | null>(null);
+
+    function toggleValue(list: string[], value: string): string[] {
+        return list.includes(value) ? list.filter(v => v !== value) : [...list, value];
+    }
     const [descriptionText, setDescriptionText] = useState<string>(() => {
         return product.description ? blocksToPlainText(product.description) : "";
     });
+
+    function handleAddFiles(files: File[]) {
+        if (!files?.length) return;
+        setNewFiles(prev => [...prev, ...files]);
+    }
 
     function blocksToPlainText(blocks: BlocksContent): string {
         const lines: string[] = [];
@@ -70,7 +90,43 @@ export default function AdmProductDetail({ product, saveAction }: ProductDetailP
                 fd.set('stock', stock);
                 fd.set('show', String(show));
                 fd.set('descriptionText', descriptionText);
+                // pass relations as documentId[] when available or numeric id fallback
+                selectedSizes.forEach((id, i) => fd.append(`sizes[${i}]`, id));
+                selectedTypes.forEach((id, i) => fd.append(`type_products[${i}]`, id));
                 await saveAction(fd);
+
+                // media flow: upload then set association
+                if ((uploadMediaAction || setMediaAction) && (newFiles.length > 0 || keptMediaIds.length >= 0)) {
+                    let newIds: number[] = [];
+                    if (uploadMediaAction && newFiles.length > 0) {
+                        const up = new FormData();
+                        newFiles.forEach((file) => up.append('files', file));
+                        const res = await uploadMediaAction(up);
+                        newIds = res.ids ?? [];
+                    }
+                    if (setMediaAction) {
+                        const assoc = new FormData();
+                        assoc.set('id', product.documentId ?? String(product.id ?? ''));
+                        const finalIds = [...keptMediaIds.map(Number), ...newIds];
+                        finalIds.forEach((id, i) => assoc.append(`media[${i}]`, String(id)));
+                        await setMediaAction(assoc);
+                        // reflect changes locally so nuevas imágenes no aparezcan como "a eliminar"
+                        setKeptMediaIds(finalIds.map(String));
+                        setNewFiles([]);
+                    }
+
+                    // eliminar de media library los que desmarcaste
+                    if (deleteMediaAction && product.media?.length) {
+                        const removedIds = (product.media ?? [])
+                          .map(m => Number(m.id))
+                          .filter(id => !keptMediaIds.includes(String(id)));
+                        if (removedIds.length > 0) {
+                            const delFd = new FormData();
+                            removedIds.forEach((id, i) => delFd.append(`mediaRemove[${i}]`, String(id)));
+                            await deleteMediaAction(delFd);
+                        }
+                    }
+                }
             } else {
                 const payload = {
                     data: {
@@ -81,6 +137,8 @@ export default function AdmProductDetail({ product, saveAction }: ProductDetailP
                         stock,
                         show,
                         description: plainTextToBlocks(descriptionText),
+                        sizes: selectedSizes.map((id) => ({ id })),
+                        type_products: selectedTypes.map((id) => ({ id })),
                     },
                 };
                 const res = await fetch(`/api/admin/products/${product.documentId}`, {
@@ -116,6 +174,52 @@ export default function AdmProductDetail({ product, saveAction }: ProductDetailP
                                     onChange={(e) => setName(e.target.value)}
                                     className="mt-1 w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 outline-none focus:ring-2 focus:ring-gray-900/20"
                                 />
+                            </div>
+                            <div className="md:col-span-3 grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700">sizes</label>
+                                    <div className="mt-2 max-h-52 overflow-auto rounded-md border border-gray-200 p-2">
+                                        {sizesOptions.map((s) => {
+                                            const value = s.documentId ?? String(s.id);
+                                            const checked = selectedSizes.includes(value);
+                                            return (
+                                                <label key={value} className="flex items-center gap-2 py-1 text-sm text-gray-800">
+                                                    <input
+                                                        type="checkbox"
+                                                        checked={checked}
+                                                        onChange={() => setSelectedSizes(prev => toggleValue(prev, value))}
+                                                    />
+                                                    <span>{s.size}</span>
+                                                </label>
+                                            );
+                                        })}
+                                        {sizesOptions.length === 0 && (
+                                            <span className="text-xs text-gray-500">No hay sizes disponibles</span>
+                                        )}
+                                    </div>
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700">type_products</label>
+                                    <div className="mt-2 max-h-52 overflow-auto rounded-md border border-gray-200 p-2">
+                                        {typeOptions.map((t) => {
+                                            const value = t.documentId ?? String(t.id);
+                                            const checked = selectedTypes.includes(value);
+                                            return (
+                                                <label key={value} className="flex items-center gap-2 py-1 text-sm text-gray-800">
+                                                    <input
+                                                        type="checkbox"
+                                                        checked={checked}
+                                                        onChange={() => setSelectedTypes(prev => toggleValue(prev, value))}
+                                                    />
+                                                    <span>{t.type}</span>
+                                                </label>
+                                            );
+                                        })}
+                                        {typeOptions.length === 0 && (
+                                            <span className="text-xs text-gray-500">No hay tipos disponibles</span>
+                                        )}
+                                    </div>
+                                </div>
                             </div>
                             <div>
                                 <label className="block text-sm font-medium text-gray-700">price</label>
@@ -169,6 +273,99 @@ export default function AdmProductDetail({ product, saveAction }: ProductDetailP
                                     spellCheck={false}
                                 />
                                 <p className="mt-1 text-xs text-gray-500">Se convertirá a Blocks de Strapi al guardar.</p>
+                                <div className="mt-6 grid grid-cols-1 gap-6">
+                                    <div>
+                                        <p className="text-sm font-medium text-gray-700 mb-2">imágenes existentes</p>
+                                        {(!product.media || product.media.length === 0) ? (
+                                            <span className="text-xs text-gray-500">No hay imágenes asociadas</span>
+                                        ) : (
+                                            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                                                {(product.media ?? []).map((m) => {
+                                                    const idStr = String(m.id);
+                                                    const checked = keptMediaIds.includes(idStr);
+                                                    const url = m.url ? `${env.strapiUrl}${m.url}` : undefined;
+                                                    return (
+                                                        <div key={idStr} className="relative rounded-lg border border-gray-200 overflow-hidden">
+                                                            {url ? (
+                                                                <Image src={url} alt={m.name} width={300} height={200} className="h-28 w-full object-cover" unoptimized />
+                                                            ) : (
+                                                                <div className="h-28 w-full bg-gray-100 flex items-center justify-center text-xs text-gray-500">sin imagen</div>
+                                                            )}
+                                                            {!checked && (
+                                                                <div className="absolute inset-0 bg-red-600/50 flex items-center justify-center">
+                                                                    <span className="text-white text-xs font-semibold">se eliminará</span>
+                                                                </div>
+                                                            )}
+                                                            <label className="absolute bottom-1 left-1 flex items-center gap-1 bg-white/90 px-1.5 py-0.5 rounded text-xs text-gray-800">
+                                                                <input
+                                                                    type="checkbox"
+                                                                    checked={checked}
+                                                                    onChange={() => setKeptMediaIds(prev => checked ? prev.filter(v => v !== idStr) : [...prev, idStr])}
+                                                                />
+                                                                mantener
+                                                            </label>
+                                                        </div>
+                                                    );
+                                                })}
+                                            </div>
+                                        )}
+                                        {product.media && product.media.length > 0 && (
+                                            (() => {
+                                                const removed = (product.media ?? []).filter(m => !keptMediaIds.includes(String(m.id)));
+                                                if (removed.length === 0) return null;
+                                                return (
+                                                    <div className="mt-3">
+                                                        <p className="text-xs font-medium text-red-700">se eliminarán:</p>
+                                                        <div className="mt-1 grid grid-cols-3 md:grid-cols-6 gap-2">
+                                                            {removed.map((m) => (
+                                                                <Image key={m.id} src={`${env.strapiUrl}${m.url}`} alt={m.name} width={120} height={80} className="h-16 w-full object-cover rounded" unoptimized />
+                                                            ))}
+                                                        </div>
+                                                    </div>
+                                                );
+                                            })()
+                                        )}
+                                    </div>
+                                    <div>
+                                        <p className="text-sm font-medium text-gray-700 mb-2">agregar nuevas imágenes</p>
+                                        <div
+                                            onDragOver={(e) => e.preventDefault()}
+                                            onDrop={(e) => {
+                                                e.preventDefault();
+                                                handleAddFiles(Array.from(e.dataTransfer.files ?? []));
+                                            }}
+                                            onClick={() => filePickerRef.current?.click()}
+                                            className="mt-1 flex flex-col items-center justify-center rounded-2xl border-2 border-dashed border-gray-300 bg-gray-50/60 hover:bg-gray-100 transition cursor-pointer p-6 text-center"
+                                        >
+                                            <UploadCloud className="h-8 w-8 text-gray-500" />
+                                            <p className="mt-2 text-sm text-gray-700">Drag and Drop</p>
+                                            <p className="text-xs text-gray-500">or</p>
+                                            <span className="mt-2 inline-flex items-center rounded-md bg-gray-800 px-3 py-1.5 text-xs text-white">Browse file</span>
+                                            <input
+                                                ref={filePickerRef}
+                                                type="file"
+                                                multiple
+                                                accept="image/*"
+                                                className="hidden"
+                                                onChange={(e) => {
+                                                    handleAddFiles(Array.from(e.currentTarget.files ?? []));
+                                                    if (e.currentTarget) e.currentTarget.value = '';
+                                                }}
+                                            />
+                                        </div>
+                                        {newFiles.length > 0 && (
+                                            <div className="mt-3 grid grid-cols-3 md:grid-cols-6 gap-2">
+                                                {newFiles.map((f, idx) => (
+                                                    <div key={idx} className="relative group">
+                                                        <Image src={URL.createObjectURL(f)} alt={f.name} width={160} height={120} className="h-20 w-full object-cover rounded" unoptimized />
+                                                        <button type="button" onClick={() => setNewFiles(prev => prev.filter((_, i) => i !== idx))} className="absolute top-1 right-1 rounded bg-white/90 px-1 text-xs text-gray-800 shadow">quitar</button>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        )}
+                                        <p className="mt-1 text-xs text-gray-500">Seleccioná una o varias imágenes. Se suben primero y luego se asocian al producto.</p>
+                                    </div>
+                                </div>
                             </div>
                             <div className="md:col-span-3 flex justify-end">
                                 <button type="submit" disabled={isSaving} className="px-4 py-2 rounded-md bg-gray-900 text-white text-sm disabled:opacity-60">

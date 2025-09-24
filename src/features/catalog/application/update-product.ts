@@ -25,6 +25,9 @@ type UpdatePayload = {
     stock?: number;
     show?: boolean;
     description: Array<{ type: 'paragraph'; children: Array<{ type: 'text'; text: string }> }>;
+    sizes?: number[];
+    type_products?: number[];
+    media?: number[];
   };
 };
 
@@ -91,6 +94,33 @@ async function resolveNumericIdByDocumentId(documentId: string): Promise<string>
   return String(resolvedId);
 }
 
+function collectRelationIds(formData: FormData, prefix: string): string[] {
+  const values: string[] = [];
+  formData.forEach((value, key) => {
+    if (key.startsWith(`${prefix}[`)) values.push(String(value));
+  });
+  return values;
+}
+
+async function resolveRelationIds(ids: string[], resource: 'sizes' | 'type-products'): Promise<number[]> {
+  const results: number[] = [];
+  for (const id of ids) {
+    if (/^\d+$/.test(id)) {
+      results.push(Number(id));
+      continue;
+    }
+    const { data } = await axios.get(`${env.strapiUrl}/api/${resource}`, {
+      params: { 'filters[documentId][$eq]': id },
+      headers: { Accept: 'application/json' },
+    });
+    const entry = Array.isArray(data?.data) ? data.data[0] : undefined;
+    const numeric = entry?.id ?? entry?.attributes?.id;
+    if (numeric === undefined) continue;
+    results.push(Number(numeric));
+  }
+  return results;
+}
+
 /**
  * Intenta actualizar usando el id dado. Si Strapi responde 404 y el id no es numérico,
  * asume que era un documentId, resuelve el id numérico y reintenta.
@@ -140,7 +170,20 @@ export async function updateProduct(formData: FormData) {
   const idOrDocumentId = String(formData.get('id') ?? '');
   if (!idOrDocumentId) throw new Error('Missing product id');
   const payload = buildUpdatePayload(formData);
+  // ids de media a conservar cuando el usuario desmarca/marca existentes
+  const keepIdsStr = collectRelationIds(formData, 'mediaKeep');
+  const keepIds = keepIdsStr.map(Number).filter((n) => Number.isFinite(n));
+  const rawSizes = collectRelationIds(formData, 'sizes');
+  const rawTypes = collectRelationIds(formData, 'type_products');
+  const [sizeIds, typeIds] = await Promise.all([
+    resolveRelationIds(rawSizes, 'sizes'),
+    resolveRelationIds(rawTypes, 'type-products'),
+  ]);
+  if (sizeIds.length) payload.data.sizes = sizeIds;
+  if (typeIds.length) payload.data.type_products = typeIds;
   const apiToken = getApiTokenOrThrow();
+  // Ya no manejamos archivos acá; media va por la feature dedicada
+  if (keepIds.length) payload.data.media = keepIds;
   return putProductWithFallback(idOrDocumentId, payload, apiToken);
 }
 
