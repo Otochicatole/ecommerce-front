@@ -4,6 +4,7 @@ import { updateProduct } from "@ecommerce-front/features/catalog/services/produc
 import { getSizes } from "@ecommerce-front/features/catalog/services/size/get";
 import { getTypeProducts } from "@ecommerce-front/features/catalog/services/type-product/get";
 import { uploadProductMedia, setProductMedia, deleteProductMedia } from "@ecommerce-front/features/catalog/services/product/media";
+import { deleteProduct } from "@ecommerce-front/features/catalog/services/product/delete";
 import { Product } from "@/types/api/product-response";
 
 export default async function Page({ params }: { params: Promise<{ product: string }> }) {
@@ -25,6 +26,7 @@ export default async function Page({ params }: { params: Promise<{ product: stri
             uploadMediaAction={uploadProductMedia}
             setMediaAction={setProductMedia}
             deleteMediaAction={deleteProductMedia}
+            deleteProductAction={deleteProduct}
             sizesOptions={sizesOptions}
             typeOptions={typeOptions}
         />
