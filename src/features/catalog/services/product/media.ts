@@ -15,41 +15,19 @@
   - Los errores se devuelven con mensajes descriptivos y posibles causas
 */
 
-import axios from 'axios';
 import env from '@/config';
+import { getApiTokenOrThrow } from '@/features/catalog/services/get-api-token';
+import { buildFriendlyUploadError } from './media.errors';
+import { validateUploadFormData, requireProductId, extractNumericIds, isNotFoundAxiosError } from './media.validation';
+import { httpUploadFiles, httpPutProductMedia, httpFindProductByDocumentId, httpDeleteAsset } from './media.http';
 
-function getApiTokenOrThrow(): string {
-  const token = process.env.STRAPI_API_TOKEN;
-  if (!token) throw new Error('Missing STRAPI_API_TOKEN for Content API');
-  return token;
-}
+ 
 
 export async function uploadProductMedia(formData: FormData): Promise<{ ids: number[]; raw: unknown }>{
   const apiToken = getApiTokenOrThrow();
-  const MAX_FILE_BYTES = Math.floor(0.95 * 1024 * 1024); // ~0.95MB per file on server action
-  formData.forEach((value, key) => {
-    if (key === 'files' && value instanceof File) {
-      if (!(value.type && value.type.startsWith('image/'))) {
-        throw new Error(`solo se permiten imágenes. archivo inválido: ${value.name}`);
-      }
-      if (value.size > MAX_FILE_BYTES) {
-        throw new Error(`file ${value.name} exceeds 1MB limit`);
-      }
-    }
-  });
-  const multipart = new FormData();
-  formData.forEach((value, key) => {
-    if (key === 'files' && value instanceof File) {
-      multipart.append('files', value);
-    }
-  });
   try {
-    const { data } = await axios.request({
-      method: 'POST',
-      url: `${env.strapiUrl}/api/upload`,
-      headers: { Authorization: `Bearer ${apiToken}` },
-      data: multipart,
-    });
+    const files = validateUploadFormData(formData);
+    const data = await httpUploadFiles(env.strapiUrl, files, { token: apiToken });
     type UploadItem = { id?: number; data?: { id?: number } };
     const items: UploadItem[] = Array.isArray(data)
       ? (data as UploadItem[])
@@ -61,42 +39,7 @@ export async function uploadProductMedia(formData: FormData): Promise<{ ids: num
       .filter((n): n is number => Number.isFinite(n as number));
     return { ids, raw: data };
   } catch (err) {
-    if (axios.isAxiosError(err)) {
-      const resData: unknown = err.response?.data;
-      let serverMessage = '';
-      if (typeof resData === 'string') {
-        serverMessage = resData;
-      } else if (resData && typeof resData === 'object') {
-        const obj = resData as Record<string, unknown>;
-        const errorObj = (obj['error'] ?? {}) as Record<string, unknown>;
-        serverMessage = String(errorObj['message'] ?? obj['message'] ?? err.message ?? '');
-      } else {
-        serverMessage = err.message;
-      }
-      const reasons: string[] = [];
-      // Always include size guidance since we enforce 0.95MB
-      reasons.push('el archivo supera 1MB o no pudo comprimirse por debajo de 1MB');
-      // Heuristics by common failure categories
-      const textBlob = JSON.stringify(resData || {}).toLowerCase() + ' ' + (serverMessage || '').toLowerCase();
-      if (textBlob.includes('token') || textBlob.includes('unauthorized') || textBlob.includes('forbidden')) {
-        reasons.push('token de API inválido o sin permisos en Strapi');
-      }
-      if (textBlob.includes('body exceeded') || textBlob.includes('payload') || textBlob.includes('entity too large')) {
-        reasons.push('límite de tamaño del request en el servidor; reiniciar o subir bodySizeLimit');
-      }
-      if (textBlob.includes('mime') || textBlob.includes('file type') || textBlob.includes('unsupported')) {
-        reasons.push('formato de imagen no soportado por el plugin de upload');
-      }
-      if (textBlob.includes('network') || err.code === 'ECONNABORTED' || err.code === 'ENOTFOUND') {
-        reasons.push('problema de red al contactar Strapi');
-      }
-      if (reasons.length < 2) {
-        reasons.push('error interno del servidor de archivos');
-      }
-      const friendly = `no se pudo subir la imagen. posibles causas: ${reasons.join('; ')}${serverMessage ? `. detalle: ${serverMessage}` : ''}`;
-      throw new Error(friendly);
-    }
-    throw new Error('no se pudo subir la imagen por un error inesperado en el servidor');
+    throw buildFriendlyUploadError(err);
   }
 }
 
@@ -114,45 +57,18 @@ export async function uploadProductMedia(formData: FormData): Promise<{ ids: num
  */
 export async function setProductMedia(formData: FormData) {
   const apiToken = getApiTokenOrThrow();
-  const idOrDoc = String(formData.get('id') ?? '');
-  if (!idOrDoc) throw new Error('Missing product id');
-  const ids: number[] = [];
-  formData.forEach((value, key) => {
-    if (key.startsWith('media[')) {
-      const n = Number(value);
-      if (Number.isFinite(n)) ids.push(n);
-    }
-  });
-  const payload = { data: { media: ids } };
+  const idOrDoc = requireProductId(formData);
+  const ids = extractNumericIds(formData, 'media[');
   try {
-    const { data } = await axios.request({
-      method: 'PUT',
-      url: `${env.strapiUrl}/api/products/${encodeURIComponent(idOrDoc)}`,
-      headers: {
-        Authorization: `Bearer ${apiToken}`,
-        Accept: 'application/json',
-        'Content-Type': 'application/json',
-      },
-      data: payload,
-    });
+    const data = await httpPutProductMedia(env.strapiUrl, idOrDoc, ids, { token: apiToken });
     return data;
   } catch (error) {
-    if (!(axios.isAxiosError(error) && error.response?.status === 404)) throw error;
-    // Fallback: si recibimos documentId, buscamos el id numérico y reintentamos
-    const list = await axios.get(`${env.strapiUrl}/api/products`, { params: { 'filters[documentId][$eq]': idOrDoc } });
-    const entry = Array.isArray(list.data?.data) ? list.data.data[0] : undefined;
+    if (!isNotFoundAxiosError(error)) throw error;
+    const list = await httpFindProductByDocumentId(env.strapiUrl, idOrDoc);
+    const entry = Array.isArray(list?.data) ? list.data[0] : undefined;
     const numericId = entry?.id ?? entry?.attributes?.id;
     if (!numericId) throw new Error('Product not found');
-    const { data } = await axios.request({
-      method: 'PUT',
-      url: `${env.strapiUrl}/api/products/${numericId}`,
-      headers: {
-        Authorization: `Bearer ${apiToken}`,
-        Accept: 'application/json',
-        'Content-Type': 'application/json',
-      },
-      data: payload,
-    });
+    const data = await httpPutProductMedia(env.strapiUrl, numericId, ids, { token: apiToken });
     return data;
   }
 }
@@ -169,19 +85,9 @@ export async function setProductMedia(formData: FormData) {
  */
 export async function deleteProductMedia(formData: FormData) {
   const apiToken = getApiTokenOrThrow();
-  const ids: number[] = [];
-  formData.forEach((value, key) => {
-    if (key.startsWith('mediaRemove[')) {
-      const n = Number(value);
-      if (Number.isFinite(n)) ids.push(n);
-    }
-  });
+  const ids = extractNumericIds(formData, 'mediaRemove[');
   for (const id of ids) {
-    await axios.request({
-      method: 'DELETE',
-      url: `${env.strapiUrl}/api/upload/files/${id}`,
-      headers: { Authorization: `Bearer ${apiToken}` },
-    });
+    await httpDeleteAsset(env.strapiUrl, id, { token: apiToken });
   }
   return { deleted: ids.length };
 }

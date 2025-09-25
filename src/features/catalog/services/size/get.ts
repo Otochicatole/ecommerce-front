@@ -6,12 +6,7 @@
 
 import axios from 'axios';
 import env from '@/config';
-
-function getAuthHeaders(): Record<string, string> {
-  const headers: Record<string, string> = { Accept: 'application/json' };
-  if (process.env.STRAPI_API_TOKEN) headers.Authorization = `Bearer ${process.env.STRAPI_API_TOKEN}`;
-  return headers;
-}
+import { getAuthHeaders } from '@/features/catalog/services/get-auth-headers';
 
 // Lista paginada de sizes
 export async function getSizes({ page = 1, pageSize = 100 }: { page?: number; pageSize?: number } = {}) {

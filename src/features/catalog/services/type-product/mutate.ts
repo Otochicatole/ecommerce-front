@@ -7,15 +7,11 @@
 
 import axios from 'axios';
 import env from '@/config';
+import { getApiTokenOrThrow } from '@/features/catalog/services/get-api-token';
 
 type TypeProductCreateInput = { type: string };
 type TypeProductUpdateInput = { idOrDocumentId: string; type: string };
 
-function getApiTokenOrThrow(): string {
-  const token = process.env.STRAPI_API_TOKEN;
-  if (!token) throw new Error('Missing STRAPI_API_TOKEN for Content API');
-  return token;
-}
 
 async function resolveNumericIdByDocumentId(documentId: string): Promise<string> {
   const { data } = await axios.get(`${env.strapiUrl}/api/type-products`, {

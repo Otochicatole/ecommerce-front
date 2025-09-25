@@ -15,6 +15,7 @@
 
 import axios from 'axios';
 import env from '@/config';
+import { getApiTokenOrThrow } from '@/features/catalog/services/get-api-token';
 
 type UpdatePayload = {
   data: {
@@ -60,12 +61,6 @@ function buildUpdatePayload(formData: FormData): UpdatePayload {
   };
 }
 
-// Lee STRAPI_API_TOKEN o falla explícitamente
-function getApiTokenOrThrow(): string {
-  const token = process.env.STRAPI_API_TOKEN;
-  if (!token) throw new Error('Missing STRAPI_API_TOKEN for Content API update');
-  return token;
-}
 
 // Resuelve id numérico partiendo de documentId para compatibilidad
 async function resolveNumericIdByDocumentId(documentId: string): Promise<string> {
