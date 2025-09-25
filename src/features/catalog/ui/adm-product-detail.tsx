@@ -27,6 +27,7 @@ export default function AdmProductDetail({ product, saveAction, uploadMediaActio
     const router = useRouter();
     const [keptMediaIds, setKeptMediaIds] = useState<string[]>(() => (product.media ?? []).map(m => String(m.id)));
     const [newFiles, setNewFiles] = useState<File[]>([]);
+    const [primaryId, setPrimaryId] = useState<string | null>(() => (product.media?.[0]?.id ? String(product.media[0].id) : null));
     const [uploaderError, setUploaderError] = useState<string | null>(null);
     const MAX_IMAGE_SIZE_MB = 1; // client-side limit per file
     const MAX_IMAGE_SIZE_BYTES = MAX_IMAGE_SIZE_MB * 1024 * 1024;
@@ -151,12 +152,16 @@ export default function AdmProductDetail({ product, saveAction, uploadMediaActio
                     if (setMediaAction) {
                         const assoc = new FormData();
                         assoc.set('id', product.documentId ?? String(product.id ?? ''));
-                        const finalIds = [...keptMediaIds.map(Number), ...newIds];
+                        const base = [...keptMediaIds.map(Number), ...newIds];
+                        const chosenPrimary = (primaryId && base.includes(Number(primaryId))) ? Number(primaryId) : base[0];
+                        const rest = base.filter(id => id !== chosenPrimary);
+                        const finalIds = [chosenPrimary, ...rest];
                         finalIds.forEach((id, i) => assoc.append(`media[${i}]`, String(id)));
                         await setMediaAction(assoc);
                         // reflect changes locally so nuevas imágenes no aparezcan como "a eliminar"
                         setKeptMediaIds(finalIds.map(String));
                         setNewFiles([]);
+                        setPrimaryId(String(finalIds[0] ?? ''));
                     }
 
                     // eliminar de media library los que desmarcaste
@@ -329,7 +334,7 @@ export default function AdmProductDetail({ product, saveAction, uploadMediaActio
                                                     const checked = keptMediaIds.includes(idStr);
                                                     const url = m.url ? `${env.strapiUrl}${m.url}` : undefined;
                                                     return (
-                                                        <div key={idStr} className="relative rounded-lg border border-gray-200 overflow-hidden">
+                                                        <div key={idStr} className={`relative rounded-lg border overflow-hidden ${primaryId === idStr ? 'border-gray-900' : 'border-gray-200'}`}>
                                                             {url ? (
                                                                 <Image src={url} alt={m.name} width={300} height={200} className="h-28 w-full object-cover" unoptimized />
                                                             ) : (
@@ -348,6 +353,15 @@ export default function AdmProductDetail({ product, saveAction, uploadMediaActio
                                                                 />
                                                                 mantener
                                                             </label>
+                                                            {checked && (
+                                                              <button
+                                                                type="button"
+                                                                onClick={() => setPrimaryId(idStr)}
+                                                                className="absolute top-1 left-1 bg-white/90 text-[10px] px-1.5 py-0.5 rounded shadow text-gray-900"
+                                                              >
+                                                                {primaryId === idStr ? 'principal' : 'hacer principal'}
+                                                              </button>
+                                                            )}
                                                         </div>
                                                     );
                                                 })}

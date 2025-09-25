@@ -30,14 +30,18 @@ export function requireProductId(formData: FormData): string {
 }
 
 export function extractNumericIds(formData: FormData, keyPrefix: string): number[] {
-  const ids: number[] = [];
+  const pairs: { idx: number; pos: number; id: number }[] = [];
+  let pos = 0;
   formData.forEach((value, key) => {
-    if (key.startsWith(keyPrefix)) {
-      const n = Number(value);
-      if (Number.isFinite(n)) ids.push(n);
-    }
+    if (!key.startsWith(keyPrefix)) return;
+    const n = Number(value);
+    if (!Number.isFinite(n)) return;
+    const match = key.match(/\[(\d+)\]/);
+    const idx = match ? Number(match[1]) : Number.POSITIVE_INFINITY;
+    pairs.push({ idx, pos: pos++, id: n });
   });
-  return ids;
+  pairs.sort((a, b) => (a.idx - b.idx) || (a.pos - b.pos));
+  return pairs.map(p => p.id);
 }
 
 export function isNotFoundAxiosError(error: unknown): error is AxiosError {

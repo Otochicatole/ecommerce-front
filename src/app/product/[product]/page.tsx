@@ -5,6 +5,7 @@ import { Product } from "@/types/api/product-response";
 export default async function Page({ params }: { params: Promise<{ product: string }> }) {
   const { product: productId } = await params;
   const response = await fetchProductByDocumentId(productId);
+  console.log(response);
   const productData: Product = response.data;
   return <ProductDetail product={productData} />;
 }
