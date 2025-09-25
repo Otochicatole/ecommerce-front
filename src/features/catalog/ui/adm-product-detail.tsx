@@ -9,6 +9,7 @@ import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import env from "@/config";
 import { UploadCloud } from "lucide-react";
+import { compressToUnderSize } from "@/shared/ui/image-compress";
 
 interface ProductDetailProps {
     product: Product;
@@ -26,6 +27,9 @@ export default function AdmProductDetail({ product, saveAction, uploadMediaActio
     const router = useRouter();
     const [keptMediaIds, setKeptMediaIds] = useState<string[]>(() => (product.media ?? []).map(m => String(m.id)));
     const [newFiles, setNewFiles] = useState<File[]>([]);
+    const [uploaderError, setUploaderError] = useState<string | null>(null);
+    const MAX_IMAGE_SIZE_MB = 1; // client-side limit per file
+    const MAX_IMAGE_SIZE_BYTES = MAX_IMAGE_SIZE_MB * 1024 * 1024;
 
     const [name, setName] = useState(product.name ?? "");
     const [price, setPrice] = useState<string>(product.price?.toString() ?? "");
@@ -45,9 +49,38 @@ export default function AdmProductDetail({ product, saveAction, uploadMediaActio
         return product.description ? blocksToPlainText(product.description) : "";
     });
 
-    function handleAddFiles(files: File[]) {
+    async function handleAddFiles(files: File[]) {
         if (!files?.length) return;
-        setNewFiles(prev => [...prev, ...files]);
+        // Reject batch if any file is not an image
+        const nonImages = files.filter(f => !(f.type && f.type.startsWith('image/')));
+        if (nonImages.length > 0) {
+            setUploaderError(`solo se permiten imágenes. quitá: ${nonImages.map(f => f.name).join(', ')}`);
+            return;
+        }
+        const processed: File[] = [];
+        const failed: string[] = [];
+        for (const file of files) {
+            if (file.size <= MAX_IMAGE_SIZE_BYTES) {
+                processed.push(file);
+                continue;
+            }
+            try {
+                const compressed = await compressToUnderSize(file, { maxBytes: Math.floor(0.95 * 1024 * 1024) });
+                if (compressed.size <= Math.floor(0.95 * 1024 * 1024)) {
+                    processed.push(compressed);
+                } else {
+                    failed.push(file.name);
+                }
+            } catch {
+                failed.push(file.name);
+            }
+        }
+        if (failed.length > 0) {
+            setUploaderError(`estas imágenes exceden 1MB, quitá estas antes de continuar: ${failed.join(', ')}`);
+            return; // reject entire batch
+        }
+        setUploaderError(null);
+        if (processed.length) setNewFiles(prev => [...prev, ...processed]);
     }
 
     function blocksToPlainText(blocks: BlocksContent): string {
@@ -80,6 +113,9 @@ export default function AdmProductDetail({ product, saveAction, uploadMediaActio
         e.preventDefault();
         try {
             setIsSaving(true);
+            if (uploaderError) {
+                return;
+            }
             if (saveAction) {
                 const fd = new FormData();
                 fd.set('id', product.documentId ?? String(product.id ?? ''));
@@ -97,12 +133,20 @@ export default function AdmProductDetail({ product, saveAction, uploadMediaActio
 
                 // media flow: upload then set association
                 if ((uploadMediaAction || setMediaAction) && (newFiles.length > 0 || keptMediaIds.length >= 0)) {
-                    let newIds: number[] = [];
+                    const newIds: number[] = [];
                     if (uploadMediaAction && newFiles.length > 0) {
-                        const up = new FormData();
-                        newFiles.forEach((file) => up.append('files', file));
-                        const res = await uploadMediaAction(up);
-                        newIds = res.ids ?? [];
+                        for (const file of newFiles) {
+                            try {
+                                const up = new FormData();
+                                up.append('files', file);
+                                const res = await uploadMediaAction(up);
+                                if (Array.isArray(res?.ids) && res.ids.length) newIds.push(...res.ids);
+                            } catch (e) {
+                                const msg = e instanceof Error ? e.message : 'Unknown upload error';
+                                setUploaderError(`no se pudo subir la imagen: ${file.name}. detalle: ${msg}`);
+                                return; // abort submit on first failed upload
+                            }
+                        }
                     }
                     if (setMediaAction) {
                         const assoc = new FormData();
@@ -330,9 +374,9 @@ export default function AdmProductDetail({ product, saveAction, uploadMediaActio
                                         <p className="text-sm font-medium text-gray-700 mb-2">agregar nuevas imágenes</p>
                                         <div
                                             onDragOver={(e) => e.preventDefault()}
-                                            onDrop={(e) => {
+                                            onDrop={async (e) => {
                                                 e.preventDefault();
-                                                handleAddFiles(Array.from(e.dataTransfer.files ?? []));
+                                                await handleAddFiles(Array.from(e.dataTransfer.files ?? []));
                                             }}
                                             onClick={() => filePickerRef.current?.click()}
                                             className="mt-1 flex flex-col items-center justify-center rounded-2xl border-2 border-dashed border-gray-300 bg-gray-50/60 hover:bg-gray-100 transition cursor-pointer p-6 text-center"
@@ -347,12 +391,15 @@ export default function AdmProductDetail({ product, saveAction, uploadMediaActio
                                                 multiple
                                                 accept="image/*"
                                                 className="hidden"
-                                                onChange={(e) => {
-                                                    handleAddFiles(Array.from(e.currentTarget.files ?? []));
+                                                onChange={async (e) => {
+                                                    await handleAddFiles(Array.from(e.currentTarget.files ?? []));
                                                     if (e.currentTarget) e.currentTarget.value = '';
                                                 }}
                                             />
                                         </div>
+                                        {uploaderError && (
+                                            <p className="mt-2 text-xs text-red-600">{uploaderError}</p>
+                                        )}
                                         {newFiles.length > 0 && (
                                             <div className="mt-3 grid grid-cols-3 md:grid-cols-6 gap-2">
                                                 {newFiles.map((f, idx) => (
@@ -368,7 +415,7 @@ export default function AdmProductDetail({ product, saveAction, uploadMediaActio
                                 </div>
                             </div>
                             <div className="md:col-span-3 flex justify-end">
-                                <button type="submit" disabled={isSaving} className="px-4 py-2 rounded-md bg-gray-900 text-white text-sm disabled:opacity-60">
+                                <button type="submit" disabled={isSaving || Boolean(uploaderError)} className="px-4 py-2 rounded-md bg-gray-900 text-white text-sm disabled:opacity-60">
                                     {isSaving ? 'Guardando...' : 'Guardar'}
                                 </button>
                             </div>

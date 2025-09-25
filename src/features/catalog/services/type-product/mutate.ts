@@ -1,12 +1,12 @@
 'use server';
 
+// Capa de servicios: Type-Product (mutaciones)
+//
+// Expone create, update y delete con compatibilidad id/documentId.
+// Requiere STRAPI_API_TOKEN ya que son operaciones de escritura.
+
 import axios from 'axios';
 import env from '@/config';
-
-/**
- * Server Actions para CRUD y lectura de TypeProduct usando la Content API de Strapi.
- * Requiere STRAPI_API_TOKEN para operaciones de escritura.
- */
 
 type TypeProductCreateInput = { type: string };
 type TypeProductUpdateInput = { idOrDocumentId: string; type: string };
@@ -28,7 +28,6 @@ async function resolveNumericIdByDocumentId(documentId: string): Promise<string>
   return String(resolvedId);
 }
 
-// CREATE
 export async function createTypeProduct(input: TypeProductCreateInput) {
   const apiToken = getApiTokenOrThrow();
   const payload = { data: { type: input.type } };
@@ -45,7 +44,6 @@ export async function createTypeProduct(input: TypeProductCreateInput) {
   return data;
 }
 
-// UPDATE (id o documentId)
 export async function updateTypeProduct(input: TypeProductUpdateInput) {
   const apiToken = getApiTokenOrThrow();
   const payload = { data: { type: input.type } };
@@ -80,7 +78,6 @@ export async function updateTypeProduct(input: TypeProductUpdateInput) {
   }
 }
 
-// DELETE (id o documentId)
 export async function deleteTypeProduct(idOrDocumentId: string) {
   const apiToken = getApiTokenOrThrow();
   try {
@@ -106,36 +103,6 @@ export async function deleteTypeProduct(idOrDocumentId: string) {
         Accept: 'application/json',
       },
     });
-    return data;
-  }
-}
-
-// GET list (paginado)
-export async function getTypeProducts({ page = 1, pageSize = 100 }: { page?: number; pageSize?: number } = {}) {
-  const params: Record<string, string> = {
-    'pagination[page]': String(page),
-    'pagination[pageSize]': String(pageSize),
-  };
-  const headers: Record<string, string> = { Accept: 'application/json' };
-  if (process.env.STRAPI_API_TOKEN) headers.Authorization = `Bearer ${process.env.STRAPI_API_TOKEN}`;
-  const { data } = await axios.get(`${env.strapiUrl}/api/type-products`, { params, headers });
-  return data;
-}
-
-// GET one (id o documentId)
-export async function getTypeProduct(idOrDocumentId: string) {
-  if (!idOrDocumentId) throw new Error('Missing type product id');
-  const headers: Record<string, string> = { Accept: 'application/json' };
-  if (process.env.STRAPI_API_TOKEN) headers.Authorization = `Bearer ${process.env.STRAPI_API_TOKEN}`;
-  try {
-    const { data } = await axios.get(`${env.strapiUrl}/api/type-products/${encodeURIComponent(idOrDocumentId)}`, { headers });
-    return data;
-  } catch (error) {
-    const is404 = axios.isAxiosError(error) && error.response?.status === 404;
-    const isNumeric = /^\d+$/.test(idOrDocumentId);
-    if (!is404 || isNumeric) throw error;
-    const numericId = await resolveNumericIdByDocumentId(idOrDocumentId);
-    const { data } = await axios.get(`${env.strapiUrl}/api/type-products/${encodeURIComponent(numericId)}`, { headers });
     return data;
   }
 }

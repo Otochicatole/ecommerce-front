@@ -1,26 +1,15 @@
 'use server';
 
+// Capa de servicios: Size (mutaciones)
+//
+// Expone create, update y delete con compatibilidad id/documentId.
+// Requiere STRAPI_API_TOKEN para operaciones de escritura.
+
 import axios from 'axios';
 import env from '@/config';
 
-/**
- * Server Actions para CRUD de "Size" en Strapi usando la Content API.
- *
- * Notas:
- * - Requiere STRAPI_API_TOKEN con permisos sobre el tipo de contenido Size.
- * - Soporta id numérico (v4) y documentId (v5). En update/delete intenta primero
- *   con el valor recibido y, si Strapi responde 404 y no es numérico, resuelve
- *   el id numérico con un GET y reintenta.
- */
-
-type SizeCreateInput = {
-  size: string;
-};
-
-type SizeUpdateInput = {
-  idOrDocumentId: string;
-  size: string;
-};
+type SizeCreateInput = { size: string };
+type SizeUpdateInput = { idOrDocumentId: string; size: string };
 
 function getApiTokenOrThrow(): string {
   const token = process.env.STRAPI_API_TOKEN;
@@ -39,52 +28,7 @@ async function resolveNumericIdByDocumentId(documentId: string): Promise<string>
   return String(resolvedId);
 }
 
-/**
- * Obtiene el listado de Sizes (paginado). Usa token si está disponible, pero no es obligatorio.
- */
-export async function getSizes({ page = 1, pageSize = 100 }: { page?: number; pageSize?: number } = {}) {
-  const params: Record<string, string> = {
-    'pagination[page]': String(page),
-    'pagination[pageSize]': String(pageSize),
-  };
-  const headers: Record<string, string> = { Accept: 'application/json' };
-  if (process.env.STRAPI_API_TOKEN) {
-    headers.Authorization = `Bearer ${process.env.STRAPI_API_TOKEN}`;
-  }
-
-  const { data } = await axios.get(`${env.strapiUrl}/api/sizes`, { params, headers });
-  return data;
-}
-
-/**
- * Obtiene un Size por id numérico o documentId (con fallback a resolución de id).
- */
-export async function getSize(idOrDocumentId: string) {
-  if (!idOrDocumentId) throw new Error('Missing size id');
-  const headers: Record<string, string> = { Accept: 'application/json' };
-  if (process.env.STRAPI_API_TOKEN) {
-    headers.Authorization = `Bearer ${process.env.STRAPI_API_TOKEN}`;
-  }
-
-  // Intento directo primero
-  try {
-    const { data } = await axios.get(`${env.strapiUrl}/api/sizes/${encodeURIComponent(idOrDocumentId)}`, { headers });
-    return data;
-  } catch (error) {
-    const is404 = axios.isAxiosError(error) && error.response?.status === 404;
-    const isNumeric = /^\d+$/.test(idOrDocumentId);
-    if (!is404 || isNumeric) throw error;
-
-    const numericId = await resolveNumericIdByDocumentId(idOrDocumentId);
-    const { data } = await axios.get(`${env.strapiUrl}/api/sizes/${encodeURIComponent(numericId)}`, { headers });
-    return data;
-  }
-}
-
-/**
- * Crea un Size.
- */
-export async function createSize(input: SizeCreateInput): Promise<unknown> {
+export async function createSize(input: SizeCreateInput) {
   const apiToken = getApiTokenOrThrow();
   const payload = { data: { size: input.size } };
 
@@ -101,14 +45,10 @@ export async function createSize(input: SizeCreateInput): Promise<unknown> {
   return data;
 }
 
-/**
- * Actualiza un Size por id numérico o documentId.
- */
-export async function updateSize(input: SizeUpdateInput): Promise<unknown> {
+export async function updateSize(input: SizeUpdateInput) {
   const apiToken = getApiTokenOrThrow();
   const payload = { data: { size: input.size } };
 
-  // Intento directo (documentId soportado en v5)
   try {
     const { data } = await axios.request({
       method: 'PUT',
@@ -122,7 +62,6 @@ export async function updateSize(input: SizeUpdateInput): Promise<unknown> {
     });
     return data;
   } catch (error) {
-    // Si es 404 y el id no es numérico, resolvemos y reintentamos
     const is404 = axios.isAxiosError(error) && error.response?.status === 404;
     const isNumeric = /^\d+$/.test(input.idOrDocumentId);
     if (!is404 || isNumeric) throw error;
@@ -142,13 +81,9 @@ export async function updateSize(input: SizeUpdateInput): Promise<unknown> {
   }
 }
 
-/**
- * Elimina un Size por id numérico o documentId.
- */
-export async function deleteSize(idOrDocumentId: string): Promise<unknown> {
+export async function deleteSize(idOrDocumentId: string) {
   const apiToken = getApiTokenOrThrow();
 
-  // Intento directo (documentId soportado en v5)
   try {
     const { data } = await axios.request({
       method: 'DELETE',

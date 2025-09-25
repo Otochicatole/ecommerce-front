@@ -1,20 +1,20 @@
 'use server';
+
+// Capa de servicios: Producto (mutaciones)
+//
+// Responsabilidad: actualizar un producto en Strapi a partir de un FormData
+// proveniente del formulario de administración.
+//
+// Decisiones de diseño:
+// - Se exige STRAPI_API_TOKEN (Content API) para escritura segura.
+// - Soporta id numérico y documentId: si falla con 404 y no es numérico,
+//   resuelve id y reintenta (compatibilidad v4/v5).
+// - Convierte la descripción de texto plano a Blocks (formato Strapi).
+// - Convierte relaciones (sizes, type_products) a ids numéricos, resolviendo
+//   documentId cuando es necesario.
+
 import axios from 'axios';
 import env from '@/config';
-
-/**
- * Server Action para actualizar un producto en Strapi usando la Content API.
- *
- * Diseño y decisiones:
- * - Se exige el uso de STRAPI_API_TOKEN (token de API de Strapi) porque la Content API
- *   no acepta el token del panel de administración.
- * - Soporta ambas variantes de identificación del recurso:
- *   - Strapi v5: permite PUT directo con documentId en la ruta
- *   - Strapi v4: requiere id numérico; si llega un documentId se resuelve primero el id
- * - El payload se arma a partir de FormData, convirtiendo tipos (number/boolean) y
- *   transformando la descripción a Blocks (formato de Strapi).
- * - Errores: se devuelven como throw para que Next.js propague 500 y puedas manejar UI.
- */
 
 type UpdatePayload = {
   data: {
@@ -31,22 +31,13 @@ type UpdatePayload = {
   };
 };
 
-/**
- * Convierte texto plano en el formato Blocks de Strapi.
- * Cada línea del texto se vuelve un párrafo con un único nodo de texto.
- */
+// Convierte texto plano a Blocks de Strapi (1 línea = 1 párrafo)
 function plainTextToBlocks(text: string): Array<{ type: 'paragraph'; children: Array<{ type: 'text'; text: string }> }> {
   const lines = text.split(/\r?\n/);
   return lines.map((line) => ({ type: 'paragraph' as const, children: [{ type: 'text' as const, text: line }] }));
 }
 
-/**
- * Construye el payload de actualización a partir del FormData del formulario de edición.
- * - Castea números (price, offerPrice, stock)
- * - Castea booleanos (offer, show)
- * - Convierte la descripción a Blocks
- * - Sólo incluye campos presentes para evitar sobreescrituras innecesarias
- */
+// Construye payload de actualización desde el FormData del formulario
 function buildUpdatePayload(formData: FormData): UpdatePayload {
   const name = formData.get('name')?.toString();
   const priceStr = formData.get('price')?.toString();
@@ -69,20 +60,14 @@ function buildUpdatePayload(formData: FormData): UpdatePayload {
   };
 }
 
-/**
- * Obtiene el token de API de Strapi desde variables de entorno.
- * Lanza un error claro si no está definido para que el flujo falle rápido.
- */
+// Lee STRAPI_API_TOKEN o falla explícitamente
 function getApiTokenOrThrow(): string {
   const token = process.env.STRAPI_API_TOKEN;
   if (!token) throw new Error('Missing STRAPI_API_TOKEN for Content API update');
   return token;
 }
 
-/**
- * Resuelve el id numérico de un producto partiendo de su documentId utilizando
- * la Content API pública (sólo lectura). Útil para compatibilidad con Strapi v4.
- */
+// Resuelve id numérico partiendo de documentId para compatibilidad
 async function resolveNumericIdByDocumentId(documentId: string): Promise<string> {
   const { data } = await axios.get(`${env.strapiUrl}/api/products`, {
     params: { 'filters[documentId][$eq]': documentId },
@@ -94,6 +79,7 @@ async function resolveNumericIdByDocumentId(documentId: string): Promise<string>
   return String(resolvedId);
 }
 
+// Extrae múltiples valores de FormData con prefijo (sizes[0], sizes[1], ...)
 function collectRelationIds(formData: FormData, prefix: string): string[] {
   const values: string[] = [];
   formData.forEach((value, key) => {
@@ -102,6 +88,7 @@ function collectRelationIds(formData: FormData, prefix: string): string[] {
   return values;
 }
 
+// Normaliza ids de relaciones: acepta numéricos y documentId
 async function resolveRelationIds(ids: string[], resource: 'sizes' | 'type-products'): Promise<number[]> {
   const results: number[] = [];
   for (const id of ids) {
@@ -109,11 +96,13 @@ async function resolveRelationIds(ids: string[], resource: 'sizes' | 'type-produ
       results.push(Number(id));
       continue;
     }
-    const { data } = await axios.get(`${env.strapiUrl}/api/${resource}`, {
-      params: { 'filters[documentId][$eq]': id },
-      headers: { Accept: 'application/json' },
-    });
-    const entry = Array.isArray(data?.data) ? data.data[0] : undefined;
+    const { data } = await axios.get(`${env.strapiUrl}/api/${resource}`);
+    const entry = Array.isArray(data?.data)
+      ? data.data.find((it: unknown) => {
+          const obj = it as { attributes?: { documentId?: string } };
+          return obj?.attributes?.documentId === id;
+        })
+      : undefined;
     const numeric = entry?.id ?? entry?.attributes?.id;
     if (numeric === undefined) continue;
     results.push(Number(numeric));
@@ -121,10 +110,7 @@ async function resolveRelationIds(ids: string[], resource: 'sizes' | 'type-produ
   return results;
 }
 
-/**
- * Intenta actualizar usando el id dado. Si Strapi responde 404 y el id no es numérico,
- * asume que era un documentId, resuelve el id numérico y reintenta.
- */
+// PUT con fallback: intenta con el id recibido, si 404 y es documentId, reintenta
 async function putProductWithFallback(idOrDocumentId: string, payload: UpdatePayload, apiToken: string) {
   try {
     const { data } = await axios.request({
@@ -157,20 +143,11 @@ async function putProductWithFallback(idOrDocumentId: string, payload: UpdatePay
   }
 }
 
-/**
- * Punto de entrada de la Server Action.
- *
- * Espera en FormData:
- * - id: string (documentId o id numérico)
- * - name, price, offer, offerPrice, stock, show, descriptionText
- *
- * Devuelve la respuesta cruda de Strapi (JSON del entry actualizado).
- */
+// Punto de entrada de actualización desde el formulario de admin
 export async function updateProduct(formData: FormData) {
   const idOrDocumentId = String(formData.get('id') ?? '');
   if (!idOrDocumentId) throw new Error('Missing product id');
   const payload = buildUpdatePayload(formData);
-  // ids de media a conservar cuando el usuario desmarca/marca existentes
   const keepIdsStr = collectRelationIds(formData, 'mediaKeep');
   const keepIds = keepIdsStr.map(Number).filter((n) => Number.isFinite(n));
   const rawSizes = collectRelationIds(formData, 'sizes');
@@ -182,7 +159,6 @@ export async function updateProduct(formData: FormData) {
   if (sizeIds.length) payload.data.sizes = sizeIds;
   if (typeIds.length) payload.data.type_products = typeIds;
   const apiToken = getApiTokenOrThrow();
-  // Ya no manejamos archivos acá; media va por la feature dedicada
   if (keepIds.length) payload.data.media = keepIds;
   return putProductWithFallback(idOrDocumentId, payload, apiToken);
 }

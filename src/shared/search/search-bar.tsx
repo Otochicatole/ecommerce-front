@@ -1,5 +1,5 @@
 'use client';
-import { fetchAllProducts } from '@catalog/services/products';
+import { fetchAllProducts } from '@ecommerce-front/features/catalog/services/product/get';
 import { Product } from '@/types/api/product-response';
 import { Search } from 'lucide-react';
 import { useRouter } from 'next/navigation';

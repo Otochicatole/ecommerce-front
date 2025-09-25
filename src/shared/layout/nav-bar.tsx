@@ -4,7 +4,7 @@
 'use client';
 import { ShoppingCart } from 'lucide-react';
 import { useCart } from '@/shared/cart/cart-context';
-import { fetchAllCategories } from '@catalog/services/categories';
+import { fetchAllCategories } from '@ecommerce-front/features/catalog/services/type-product/get';
 import { CategoryAttributes } from '@/types/api/category-response';
 import { ChevronDown } from 'lucide-react';
 import Link from 'next/link';

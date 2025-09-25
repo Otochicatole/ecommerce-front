@@ -1,9 +1,9 @@
-import { fetchProductByDocumentId } from "@catalog/services/products";
+import { fetchProductByDocumentId } from "@ecommerce-front/features/catalog/services/product/get";
 import AdmProductDetail from "@catalog/ui/adm-product-detail";
-import { updateProduct } from "@/features/catalog/application/update-product";
-import { getSizes } from "@/features/catalog/application/size-actions";
-import { getTypeProducts } from "@/features/catalog/application/type-product-actions";
-import { uploadProductMedia, setProductMedia, deleteProductMedia } from "@/features/catalog/application/product-media-actions";
+import { updateProduct } from "@ecommerce-front/features/catalog/services/product/mutate";
+import { getSizes } from "@ecommerce-front/features/catalog/services/size/get";
+import { getTypeProducts } from "@ecommerce-front/features/catalog/services/type-product/get";
+import { uploadProductMedia, setProductMedia, deleteProductMedia } from "@ecommerce-front/features/catalog/services/product/media";
 import { Product } from "@/types/api/product-response";
 
 export default async function Page({ params }: { params: Promise<{ product: string }> }) {

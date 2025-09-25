@@ -1,4 +1,4 @@
-import { fetchProducts } from "@catalog/services/products";
+import { fetchProducts } from "@ecommerce-front/features/catalog/services/product/get";
 import ProductGrid from "@catalog/ui/product-grid";
 import Pagination from "@catalog/ui/pagination";
 import { DEFAULT_PAGE_SIZE } from "@/config";

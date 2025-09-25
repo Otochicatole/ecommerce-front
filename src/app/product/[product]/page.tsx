@@ -1,4 +1,4 @@
-import { fetchProductByDocumentId } from "@catalog/services/products";
+import { fetchProductByDocumentId } from "@ecommerce-front/features/catalog/services/product/get";
 import ProductDetail from "@catalog/ui/product-detail";
 import { Product } from "@/types/api/product-response";
 

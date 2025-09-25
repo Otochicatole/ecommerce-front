@@ -3,7 +3,7 @@ import CardProduct from "./card-product";
 import CardProductSkeleton from "./card-product-skeleton";
 import { Product } from "@/types/api/product-response";
 import SearchBar from "./search-bar";
-import { fetchProductsBySearch } from "@catalog/services/products";
+import { fetchProductsBySearch } from "@ecommerce-front/features/catalog/services/product/get";
 import { useEffect, useState } from "react";
 
 interface ProductGridProps {

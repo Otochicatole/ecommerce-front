@@ -9,7 +9,7 @@
 // - loguear la verificación para auditoría
 // - llamar a la ruta interna que crea la preference y devolver el preferenceId
 
-import { fetchProductByDocumentId } from '@/features/catalog/services/products';
+import { fetchProductByDocumentId } from '@ecommerce-front/features/catalog/services/product/get';
 import { headers } from 'next/headers';
 
 // payload de un item que viene del carrito del cliente
