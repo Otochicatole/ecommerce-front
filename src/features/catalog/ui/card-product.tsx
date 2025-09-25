@@ -13,8 +13,10 @@ export default function CardProduct({ data, isList }: { data: Product, isList?: 
   // isAdmin
   const { isAdmin } = useAdminAuth();
 
-  const fixPrice = data.price.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
-  const fixOfferPrice = data.offerPrice.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+  const priceNum = Number((data?.price as unknown as string | number | undefined) ?? 0);
+  const offerPriceNum = Number((data?.offerPrice as unknown as string | number | undefined) ?? 0);
+  const fixPrice = priceNum.toLocaleString('es-AR');
+  const fixOfferPrice = offerPriceNum.toLocaleString('es-AR');
 
   const handleClick = () => {
     if (isAdmin) {
@@ -55,7 +57,7 @@ export default function CardProduct({ data, isList }: { data: Product, isList?: 
                   <p className={styles.offerPrice}>${fixPrice}</p>
                   <p className={styles.price}>
                     ${fixOfferPrice}
-                    <span className={styles.discount}>{Math.round(((Number(data.price) - Number(data.offerPrice)) / Number(data.price)) * 100)}% OFF</span>
+                    <span className={styles.discount}>{priceNum > 0 ? Math.round(((priceNum - offerPriceNum) / priceNum) * 100) : 0}% OFF</span>
                   </p>
                 </>
               ) : (

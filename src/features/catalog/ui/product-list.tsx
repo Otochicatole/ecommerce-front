@@ -3,6 +3,7 @@ import CardProduct from "./card-product";
 import CardProductSkeleton from "./card-product-skeleton";
 import { Product } from "@/types/api/product-response";
 import SearchBar from "./search-bar";
+import Link from "next/link";
 import { fetchProductsBySearch } from "@ecommerce-front/features/catalog/services/product/get";
 import { useEffect, useState } from "react";
 
@@ -57,8 +58,13 @@ export default function ProductList({ products, onSearchActiveChange }: ProductG
   }
 
   return (
-    <>
-      <SearchBar value={query} onChange={setQuery} />
+  <>
+      <div className="flex items-center justify-between px-3">
+        <SearchBar value={query} onChange={setQuery} />
+        <Link href="/admin/create" className="ml-3 inline-flex items-center rounded-md bg-gray-900 px-3 py-2 text-xs text-white hover:bg-gray-800">
+          crear producto
+        </Link>
+      </div>
         {isSearching ? (
           <ul className="flex flex-col gap-4 p-3">
             {Array.from({ length: 10 }).map((_, index) => (

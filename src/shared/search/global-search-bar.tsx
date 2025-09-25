@@ -9,7 +9,7 @@ import { useState } from 'react';
 export default function SearchBar() {
   const [query, setQuery] = useState('');
   const router = useRouter();
-  const { setSearch } = useSearch();
+  const { setSearch, results } = useSearch();
 
   // La búsqueda se ejecuta sólo al presionar Enter o click en el icono
 
@@ -23,7 +23,11 @@ export default function SearchBar() {
       const trimmed = query.trim();
       if (trimmed === '') {
         setSearch('', []);
-        router.push('/search');
+        if (results && results.length > 0 && query.trim() !== '') {
+          router.push('/search');
+        } else {
+          router.push('/all');
+        }
         return;
       }
       try {

@@ -39,6 +39,7 @@ export default function AdmProductDetail({ product, saveAction, uploadMediaActio
     const [isSaving, setIsSaving] = useState(false);
     const [isDeleting, setIsDeleting] = useState(false);
     const [confirmOpen, setConfirmOpen] = useState(false);
+    const hasDelete = Boolean(deleteProductAction && (product.documentId || product.id));
     const [selectedSizes, setSelectedSizes] = useState<string[]>(() => (product.sizes ?? []).map(s => s.documentId ?? String(s.id)));
     const [selectedTypes, setSelectedTypes] = useState<string[]>(() => (product.type_products ?? []).map(t => t.documentId ?? String(t.id)));
     function toggleValue(list: string[], value: string): string[] {
@@ -68,10 +69,16 @@ export default function AdmProductDetail({ product, saveAction, uploadMediaActio
                 // pass relations as documentId[] when available or numeric id fallback
                 selectedSizes.forEach((id, i) => fd.append(`sizes[${i}]`, id));
                 selectedTypes.forEach((id, i) => fd.append(`type_products[${i}]`, id));
-                await saveAction(fd);
+                const saveRes = await saveAction(fd);
 
-                // media flow: upload then set association
-                if ((uploadMediaAction || setMediaAction) && (newFiles.length > 0 || keptMediaIds.length >= 0)) {
+                // media flow: upload then set association (only if we have a valid id/documentId)
+                const fromSave = (typeof saveRes === 'object' && saveRes !== null) ? (saveRes as { id?: number; documentId?: string }) : undefined;
+                const idForMedia = (
+                    (fromSave?.documentId ?? (fromSave?.id != null ? String(fromSave.id) : ''))
+                    || product.documentId
+                    || (product.id ? String(product.id) : '')
+                );
+                if ((uploadMediaAction || setMediaAction) && idForMedia && (newFiles.length > 0 || keptMediaIds.length > 0)) {
                     const newIds: number[] = [];
                     if (uploadMediaAction && newFiles.length > 0) {
                         for (const file of newFiles) {
@@ -89,29 +96,39 @@ export default function AdmProductDetail({ product, saveAction, uploadMediaActio
                     }
                     if (setMediaAction) {
                         const assoc = new FormData();
-                        assoc.set('id', product.documentId ?? String(product.id ?? ''));
+                        assoc.set('id', String(idForMedia));
                         const base = [...keptMediaIds.map(Number), ...newIds];
-                        const chosenPrimary = (primaryId && base.includes(Number(primaryId))) ? Number(primaryId) : base[0];
-                        const rest = base.filter(id => id !== chosenPrimary);
-                        const finalIds = [chosenPrimary, ...rest];
-                        finalIds.forEach((id, i) => assoc.append(`media[${i}]`, String(id)));
-                        await setMediaAction(assoc);
-                        // reflect changes locally so nuevas imágenes no aparezcan como "a eliminar"
-                        setKeptMediaIds(() => finalIds.map(String));
-                        clearNewFiles();
-                        setPrimaryId(String(finalIds[0] ?? ''));
-                    }
-
-                    // eliminar de media library los que desmarcaste
-                    if (deleteMediaAction && product.media?.length) {
-                        const removedIds = (product.media ?? [])
-                          .map(m => Number(m.id))
-                          .filter(id => !keptMediaIds.includes(String(id)));
-                        if (removedIds.length > 0) {
-                            const delFd = new FormData();
-                            removedIds.forEach((id, i) => delFd.append(`mediaRemove[${i}]`, String(id)));
-                            await deleteMediaAction(delFd);
+                        if (base.length === 0) {
+                            // nothing to associate, continue
+                        } else {
+                            const chosenPrimary = (primaryId && base.includes(Number(primaryId))) ? Number(primaryId) : base[0];
+                            const rest = base.filter(id => id !== chosenPrimary);
+                            const finalIds = [chosenPrimary, ...rest];
+                            finalIds.forEach((id, i) => assoc.append(`media[${i}]`, String(id)));
+                            await setMediaAction(assoc);
+                            // reflect changes locally so nuevas imágenes no aparezcan como "a eliminar"
+                            setKeptMediaIds(() => finalIds.map(String));
+                            clearNewFiles();
+                            setPrimaryId(String(finalIds[0] ?? ''));
                         }
+                    }
+                }
+                // navigate after create
+                const wasCreate = !(product.documentId || product.id);
+                const newDocId = fromSave?.documentId;
+                if (wasCreate && newDocId) {
+                    router.push(`/admin/edit/product/${newDocId}`);
+                    return;
+                }
+                // eliminar de media library los que desmarcaste
+                if (deleteMediaAction && product.media?.length) {
+                    const removedIds = (product.media ?? [])
+                      .map(m => Number(m.id))
+                      .filter(id => !keptMediaIds.includes(String(id)));
+                    if (removedIds.length > 0) {
+                        const delFd = new FormData();
+                        removedIds.forEach((id, i) => delFd.append(`mediaRemove[${i}]`, String(id)));
+                        await deleteMediaAction(delFd);
                     }
                 }
             } else {
@@ -321,26 +338,30 @@ export default function AdmProductDetail({ product, saveAction, uploadMediaActio
                                     </div>
                                 </div>
                             </div>
-                            <div className="md:col-span-3 flex justify-between">
-                                <button type="button" onClick={() => setConfirmOpen(true)} className="px-4 py-2 rounded-md bg-red-600 text-white text-sm disabled:opacity-60">
-                                    eliminar producto
-                                </button>
+                            <div className={`md:col-span-3 flex ${hasDelete ? 'justify-between' : 'justify-end'}`}>
+                                {hasDelete && (
+                                    <button type="button" onClick={() => setConfirmOpen(true)} className="px-4 py-2 rounded-md bg-red-600 text-white text-sm disabled:opacity-60">
+                                        eliminar producto
+                                    </button>
+                                )}
                                 <button type="submit" disabled={isSaving || Boolean(uploaderError)} className="px-4 py-2 rounded-md bg-gray-900 text-white text-sm disabled:opacity-60">
                                     {isSaving ? 'Guardando...' : 'Guardar'}
                                 </button>
                             </div>
                         </form>
                     </header>
-                    <ConfirmDialog
-                        open={confirmOpen}
-                        title="eliminar producto"
-                        description={<span>vas a eliminar <b>{name || product.name}</b>. esta acción no se puede deshacer.</span>}
-                        confirmText="eliminar"
-                        cancelText="cancelar"
-                        onConfirm={handleDeleteConfirm}
-                        onCancel={() => setConfirmOpen(false)}
-                        loading={isDeleting}
-                    />
+                    {hasDelete && (
+                        <ConfirmDialog
+                            open={confirmOpen}
+                            title="eliminar producto"
+                            description={<span>vas a eliminar <b>{name || product.name}</b>. esta acción no se puede deshacer.</span>}
+                            confirmText="eliminar"
+                            cancelText="cancelar"
+                            onConfirm={handleDeleteConfirm}
+                            onCancel={() => setConfirmOpen(false)}
+                            loading={isDeleting}
+                        />
+                    )}
                 </div>
         </main>
     );
