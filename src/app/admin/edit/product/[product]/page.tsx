@@ -20,15 +20,18 @@ export default async function Page({ params }: { params: Promise<{ product: stri
     const typeOptions = Array.isArray(typesRes?.data) ? typesRes.data : [];
 
     return (
-        <AdmProductDetail
-            product={productData}
-            saveAction={updateProduct}
-            uploadMediaAction={uploadProductMedia}
-            setMediaAction={setProductMedia}
-            deleteMediaAction={deleteProductMedia}
-            deleteProductAction={deleteProduct}
-            sizesOptions={sizesOptions}
-            typeOptions={typeOptions}
-        />
+        <>
+            <h1 className="text-2xl font-bold pt-6  pl-10">Editar producto</h1>
+            <AdmProductDetail
+                product={productData}
+                saveAction={updateProduct}
+                uploadMediaAction={uploadProductMedia}
+                setMediaAction={setProductMedia}
+                deleteMediaAction={deleteProductMedia}
+                deleteProductAction={deleteProduct}
+                sizesOptions={sizesOptions}
+                typeOptions={typeOptions}
+            />
+        </>
     );
 }
