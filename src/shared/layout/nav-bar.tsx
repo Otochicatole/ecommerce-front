@@ -11,7 +11,7 @@ import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { useAdminAuth } from '@/shared/auth/admin-auth-context';
 import { useRouter } from 'next/navigation';
-import SearchBar from '@/shared/search/search-bar';
+import GlobalSearchBar from '@shared/search/global-search-bar';
 
 const links = [
   { href: '/', label: 'Home' },
@@ -43,7 +43,7 @@ export default function NavBar() {
       <div />
       {/* Central section with search and links */}
       <div className='flex flex-col pt-3 justify-between gap-3 w-[40%]'>
-        <SearchBar />
+        <GlobalSearchBar />
 
         <div className='flex px-6 w-full text-black/80'>
           {links.map((link, index) => (
