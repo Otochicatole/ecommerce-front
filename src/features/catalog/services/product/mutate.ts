@@ -96,13 +96,12 @@ async function resolveRelationIds(ids: string[], resource: 'sizes' | 'type-produ
       results.push(Number(id));
       continue;
     }
-    const { data } = await axios.get(`${env.strapiUrl}/api/${resource}`);
-    const entry = Array.isArray(data?.data)
-      ? data.data.find((it: unknown) => {
-          const obj = it as { attributes?: { documentId?: string } };
-          return obj?.attributes?.documentId === id;
-        })
-      : undefined;
+    // Resolver id numérico consultando por documentId con filtro (evita problemas de paginación)
+    const { data } = await axios.get(`${env.strapiUrl}/api/${resource}`, {
+      params: { 'filters[documentId][$eq]': id },
+      headers: { Accept: 'application/json' },
+    });
+    const entry = Array.isArray(data?.data) ? data.data[0] : undefined;
     const numeric = entry?.id ?? entry?.attributes?.id;
     if (numeric === undefined) continue;
     results.push(Number(numeric));
