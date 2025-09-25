@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import NavBar from "@/shared/layout/nav-bar";
+import { SearchProvider } from "@/shared/search/search-context";
 import { CartProvider } from "@/shared/cart/cart-context";
 import CartAside from "@/shared/cart/cart-aside";
 import { Toaster } from "react-hot-toast";
@@ -32,11 +33,13 @@ export default function RootLayout({
       <body className={`${geistSans.variable} ${geistMono.variable}`}>
         <AdminAuthProvider>
           <CartProvider>
-            <NavBar />
-            <CartAside />
-            <main className="mt-[106px]">
-              {children}
-            </main>
+            <SearchProvider>
+              <NavBar />
+              <CartAside />
+              <main className="mt-[106px]">
+                {children}
+              </main>
+            </SearchProvider>
             <Toaster
               position="bottom-right"
               toastOptions={{
