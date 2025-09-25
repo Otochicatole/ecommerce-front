@@ -1,9 +1,6 @@
 'use client';
-import Box from "@/shared/ui/box";
-import VerticalCarousel from "./vertical-carousel";
 import { Product } from "@/types/api/product-response";
 import Image from "next/image";
-import { BlocksRenderer } from "@strapi/blocks-react-renderer";
 import type { BlocksContent } from "@strapi/blocks-react-renderer";
 import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
@@ -22,8 +19,6 @@ interface ProductDetailProps {
 }
 
 export default function AdmProductDetail({ product, saveAction, uploadMediaAction, setMediaAction, deleteMediaAction, sizesOptions = [], typeOptions = [] }: ProductDetailProps) {
-    const initialImage = product.media?.[0]?.url ? `${env.strapiUrl}${product.media[0].url}` : "/nullimg.webp";
-    const [imageViewUrl, setImageViewUrl] = useState(initialImage);
     const router = useRouter();
     const [keptMediaIds, setKeptMediaIds] = useState<string[]>(() => (product.media ?? []).map(m => String(m.id)));
     const [newFiles, setNewFiles] = useState<File[]>([]);
