@@ -211,9 +211,8 @@ export default function AdmProductDetail({ product, saveAction, uploadMediaActio
 
     return (
         <main className="flex flex-col items-center p-5 min-h-screen overflow-y-auto">
-            <Box className="min-h-[95vh]">
                 <div className="flex flex-col h-full min-h-[90vh] p-2 w-full gap-6">
-                    <header className="flex flex-col w-full p-4 bg-white/80 backdrop-blur-lg rounded-2xl shadow-xl transition-all duration-300">
+                    <header className="flex border border-black/20 flex-col w-full p-4 bg-white/80 backdrop-blur-lg rounded-2xl shadow-xl transition-all duration-300">
                         <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-3 gap-4">
                             <div className="col-span-1 md:col-span-3">
                                 <label className="block text-sm font-medium text-gray-700">name</label>
@@ -435,22 +434,7 @@ export default function AdmProductDetail({ product, saveAction, uploadMediaActio
                             </div>
                         </form>
                     </header>
-                    <article className="flex flex-col w-full">
-                        <section className="flex gap-2 flex-row w-full">
-                            <VerticalCarousel data={product} setImageViewUrl={setImageViewUrl} />
-                            <div className="flex flex-row items-center justify-center w-full overflow-hidden h-[550px] p-6 bg-black/5 rounded-lg shadow-lg border border-black/1">
-                                {imageViewUrl ? (
-                                    <Image className="object-cover w-fit h-fit rounded-lg" src={imageViewUrl} loading="lazy" alt={product.name || "Imagen del producto"} width={500} height={500} unoptimized />
-                                ) : null}
-                            </div>
-                        </section>
-                        <section className="mt-6">
-                            <h2 className="text-xl text-black/70 font-semibold mb-2">Descripción</h2>
-                            {product?.description ? <BlocksRenderer content={product.description} /> : <p>No description available.</p>}
-                        </section>
-                    </article>
                 </div>
-            </Box>
         </main>
     );
 }
