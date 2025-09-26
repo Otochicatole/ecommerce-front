@@ -26,19 +26,34 @@ async function resolveNumericIdByDocumentId(documentId: string): Promise<string>
 
 export async function createSize(input: SizeCreateInput) {
   const apiToken = getApiTokenOrThrow();
-  const payload = { data: { size: input.size } };
+  const raw = (input.size ?? '').trim();
+  if (!raw) throw new Error('Size is required');
+  // normalize: upper-case and strip non A-Z0-9 to match backend regex
+  const normalized = raw.toUpperCase().replace(/[^A-Z0-9]/g, '');
+  if (!normalized) throw new Error('Size is invalid after normalization');
+  if (!/^[A-Z0-9]+$/.test(normalized)) throw new Error('Size format invalid');
+  const payload = { data: { size: normalized } };
 
-  const { data } = await axios.request({
-    method: 'POST',
-    url: `${env.strapiUrl}/api/sizes`,
-    headers: {
-      Authorization: `Bearer ${apiToken}`,
-      Accept: 'application/json',
-      'Content-Type': 'application/json',
-    },
-    data: payload,
-  });
-  return data;
+  try {
+    const { data } = await axios.request({
+      method: 'POST',
+      url: `${env.strapiUrl}/api/sizes`,
+      headers: {
+        Authorization: `Bearer ${apiToken}`,
+        Accept: 'application/json',
+        'Content-Type': 'application/json',
+      },
+      data: payload,
+    });
+    return data;
+  } catch (error) {
+    if (axios.isAxiosError(error)) {
+      const respData = error.response?.data as unknown as { error?: { message?: string } } | undefined;
+      const msg = respData?.error?.message ?? error.message;
+      throw new Error(msg);
+    }
+    throw error;
+  }
 }
 
 export async function updateSize(input: SizeUpdateInput) {

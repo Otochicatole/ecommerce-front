@@ -26,23 +26,43 @@ async function resolveNumericIdByDocumentId(documentId: string): Promise<string>
 
 export async function createTypeProduct(input: TypeProductCreateInput) {
   const apiToken = getApiTokenOrThrow();
-  const payload = { data: { type: input.type } };
-  const { data } = await axios.request({
-    method: 'POST',
-    url: `${env.strapiUrl}/api/type-products`,
-    headers: {
-      Authorization: `Bearer ${apiToken}`,
-      Accept: 'application/json',
-      'Content-Type': 'application/json',
-    },
-    data: payload,
-  });
-  return data;
+  const raw = (input.type ?? '').trim();
+  if (!raw) throw new Error('Type is required');
+  // normalize: lower-case, allow letters, numbers and spaces; collapse multiple spaces
+  const normalized = raw.toLowerCase().replace(/[^a-z0-9\s]/g, ' ').replace(/\s+/g, ' ').trim();
+  if (!normalized) throw new Error('Type is invalid after normalization');
+  if (!/^[a-z0-9\s]+$/.test(normalized)) throw new Error('Type format invalid');
+  const payload = { data: { type: normalized } };
+  try {
+    const { data } = await axios.request({
+      method: 'POST',
+      url: `${env.strapiUrl}/api/type-products`,
+      headers: {
+        Authorization: `Bearer ${apiToken}`,
+        Accept: 'application/json',
+        'Content-Type': 'application/json',
+      },
+      data: payload,
+    });
+    return data;
+  } catch (error) {
+    if (axios.isAxiosError(error)) {
+      const respData = error.response?.data as unknown as { error?: { message?: string } } | undefined;
+      const msg = respData?.error?.message ?? error.message;
+      throw new Error(msg);
+    }
+    throw error;
+  }
 }
 
 export async function updateTypeProduct(input: TypeProductUpdateInput) {
   const apiToken = getApiTokenOrThrow();
-  const payload = { data: { type: input.type } };
+  const raw = (input.type ?? '').trim();
+  if (!raw) throw new Error('Type is required');
+  const normalized = raw.toLowerCase().replace(/[^a-z0-9\s]/g, ' ').replace(/\s+/g, ' ').trim();
+  if (!normalized) throw new Error('Type is invalid after normalization');
+  if (!/^[a-z0-9\s]+$/.test(normalized)) throw new Error('Type format invalid');
+  const payload = { data: { type: normalized } };
   try {
     const { data } = await axios.request({
       method: 'PUT',
