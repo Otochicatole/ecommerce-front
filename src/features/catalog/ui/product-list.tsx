@@ -86,7 +86,7 @@ export default function ProductList({ products, onSearchActiveChange }: ProductG
   <>
       <div className="flex items-center justify-between px-3">
         <SearchBar value={query} onChange={setQuery} />
-        <div className="flex items-center gap-2">
+        <div className="flex min-w-[300px] gap-2">
           <Link href="/admin/create" className="inline-flex items-center rounded-md bg-gray-900 px-3 py-2 text-xs text-white hover:bg-gray-800">
             crear producto
           </Link>
