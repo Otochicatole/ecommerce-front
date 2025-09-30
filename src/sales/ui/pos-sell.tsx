@@ -6,6 +6,8 @@ import { addToCart, calculateSubtotal, calculateTotal, clearCart, PosCart, remov
 import { fetchAllProducts, fetchProductsBySearch } from '@ecommerce-front/features/catalog/services/product/get';
 import { registerSale } from '@/sales/application/register-sale';
 import { Plus, Minus, Search, X } from 'lucide-react';
+import Image from 'next/image';
+import env from '@/config';
 
 type PosSellProps = {
   initialProducts?: Product[];
@@ -18,6 +20,8 @@ export function PosSell({ initialProducts = [] }: PosSellProps) {
   const [cart, setCart] = useState<PosCart>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [preview, setPreview] = useState<Product | null>(null);
+  const [activeIdx, setActiveIdx] = useState(0);
 
   // small util to clamp quantities
   const clamp = (value: number, min: number, max: number) => Math.max(min, Math.min(value, max));
@@ -56,7 +60,13 @@ export function PosSell({ initialProducts = [] }: PosSellProps) {
 
   const total = useMemo(() => calculateTotal(cart), [cart]);
 
+  // reset active image when preview changes
+  useEffect(() => {
+    setActiveIdx(0);
+  }, [preview?.id]);
+
   return (
+    <>
     <div className="grid h-full grid-cols-1 lg:grid-cols-2 gap-6">
       <section className="bg-white/80 backdrop-blur-xl shadow-lg ring-1 ring-black/5 rounded-3xl p-5">
         <div className="mb-4">
@@ -83,15 +93,15 @@ export function PosSell({ initialProducts = [] }: PosSellProps) {
         </div>
         <ul className="max-h-[60vh] overflow-auto divide-y p-3 divide-gray-100">
           {results.map((p) => (
-            <li key={p.id} className="flex items-center justify-between py-3">
-              <div>
+            <li key={p.id} className="flex items-center justify-between py-3 cursor-pointer" onClick={() => setPreview(p)}>
+              <div className="text-left">
                 <p className="text-[15px] font-semibold text-gray-900">{p.name}</p>
                 <p className="text-[12px] text-gray-600">${(p.offer ? p.offerPrice : p.price).toLocaleString('es-AR')} • stock: {p.stock}</p>
               </div>
               <button
                 type="button"
                 disabled={!p.stock || p.stock <= 0}
-                onClick={() => setCart((c) => addToCart(c, p, 1))}
+                onClick={(e) => { e.stopPropagation(); setCart((c) => addToCart(c, p, 1)); }}
                 className="h-9 w-9 inline-flex items-center justify-center rounded-full bg-gray-900 text-white shadow-md hover:scale-105 active:scale-95 transition disabled:opacity-40"
                 aria-label="agregar"
               >
@@ -201,6 +211,60 @@ export function PosSell({ initialProducts = [] }: PosSellProps) {
         )}
       </section>
     </div>
+    {preview && (() => { const p = preview as Product; return (
+      <div className="fixed inset-0 z-[100] flex items-center justify-center">
+        <div className="absolute inset-0 bg-black/40" onClick={() => setPreview(null)} />
+        <div className="relative z-10 w-[92%] max-w-md rounded-3xl bg-white p-4 shadow-xl ring-1 ring-black/5">
+          <div className="flex items-start justify-between">
+            <h3 className="text-base font-semibold text-gray-900 pr-6">{p.name}</h3>
+            <button type="button" onClick={() => setPreview(null)} className="h-8 w-8 inline-flex items-center justify-center rounded-full bg-gray-100 hover:bg-gray-200 active:scale-95 transition" aria-label="cerrar">
+              <X size={16} />
+            </button>
+          </div>
+          <div className="mt-3 p-3">
+            {(() => {
+              const imgs = (p.media ?? []).map(m => (m?.url ? `${env.strapiUrl}${m.url}` : '/nullimg.webp'));
+              const url = imgs[activeIdx] ?? '/nullimg.webp';
+              return (
+                <>
+                  <Image src={url} alt={p.name} width={640} height={480} className="w-full h-56 object-cover rounded-2xl" unoptimized />
+                  {imgs.length > 1 && (
+                    <div className="mt-2 p-3 flex items-center gap-2 overflow-x-auto">
+                      {imgs.map((u, i) => (
+                        <button
+                          key={i}
+                          type="button"
+                          onClick={() => setActiveIdx(i)}
+                          className={`relative h-14 w-14 rounded-xl overflow-hidden ring-2 ${i === activeIdx ? 'ring-gray-900' : 'ring-transparent'} focus:outline-none`}
+                          aria-label={`vista ${i + 1}`}
+                        >
+                          <Image src={u} alt={`${p.name}-${i}`} width={112} height={112} className="h-full w-full object-cover" unoptimized />
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </>
+              );
+            })()}
+            <div className="mt-3 flex items-center justify-between">
+              <div className="text-sm text-gray-700">
+                <p>Precio: <b>${(p.offer ? p.offerPrice : p.price).toLocaleString('es-AR')}</b></p>
+                <p className="mt-1">Stock: <b>{p.stock}</b></p>
+              </div>
+              <button
+                type="button"
+                onClick={() => { setCart((c) => addToCart(c, p, 1)); setPreview(null); }}
+                disabled={!p.stock}
+                className="px-4 py-2 rounded-full bg-gray-900 text-white text-sm font-semibold shadow-md hover:bg-gray-800 active:scale-95 transition disabled:opacity-40"
+              >
+                Agregar
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    ); })()}
+  </>
   );
 }
 
