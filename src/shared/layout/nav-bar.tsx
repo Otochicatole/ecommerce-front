@@ -4,7 +4,6 @@
 'use client';
 import { ShoppingCart } from 'lucide-react';
 import { useCart } from '@/shared/cart/cart-context';
-import { fetchAllCategories } from '@ecommerce-front/features/catalog/services/type-product/get';
 import { CategoryAttributes } from '@/types/api/category-response';
 import { ChevronDown } from 'lucide-react';
 import Link from 'next/link';
@@ -19,22 +18,14 @@ const links = [
   { href: '/all', label: 'Todo' },
 ];
 
-export default function NavBar() {
-  const [dropdownLinksCategories, setDropdownLinksCategories] = useState<CategoryAttributes[]>([]);
+type NavBarProps = { categories?: CategoryAttributes[] };
+
+export default function NavBar({ categories = [] }: NavBarProps) {
+  const [dropdownLinksCategories, setDropdownLinksCategories] = useState<CategoryAttributes[]>(categories);
   const { isAdmin, logout, loading } = useAdminAuth();
   const router = useRouter();
 
-  useEffect(() => {
-    const fetchCategories = async () => {
-      try {
-        const response = await fetchAllCategories();
-        setDropdownLinksCategories(response.data);
-      } catch (error) {
-        console.error('Error fetching categories:', error);
-      }
-    };
-    fetchCategories();
-  }, []);
+  // categories are provided by server; keep an effect only if you plan to refresh client-side in the future
 
   const { totalItems, toggleCart } = useCart();
 

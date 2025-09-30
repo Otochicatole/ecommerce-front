@@ -58,7 +58,7 @@ export default function CheckoutPage() {
                       {size && <p className="text-sm text-gray-500">Talle: {size}</p>}
                     </div>
                     <p className="text-sm text-gray-700">x{quantity}</p>
-                    <p className="text-sm font-medium text-gray-900">${Number(product.offer ? product.offerPrice : product.price).toLocaleString('en-US')}</p>
+                    <p className="text-sm font-medium text-gray-900">${(product.offer ? product.offerPrice : product.price).toLocaleString('en-US')}</p>
                   </li>
                 );
               })}

@@ -3,6 +3,7 @@
 import axios from 'axios';
 import env from '@/config';
 import { getApiTokenOrThrow } from '@/features/catalog/services/get-api-token';
+import { plainTextToBlocks } from '@/features/catalog/services/product/description';
 
 type CreatePayload = {
   data: {
@@ -17,11 +18,6 @@ type CreatePayload = {
     type_products?: number[];
   };
 };
-
-function plainTextToBlocks(text: string): Array<{ type: 'paragraph'; children: Array<{ type: 'text'; text: string }> }> {
-  const lines = text.split(/\r?\n/);
-  return lines.map((line) => ({ type: 'paragraph' as const, children: [{ type: 'text' as const, text: line }] }));
-}
 
 function buildCreatePayload(formData: FormData): CreatePayload {
   const name = formData.get('name')?.toString();

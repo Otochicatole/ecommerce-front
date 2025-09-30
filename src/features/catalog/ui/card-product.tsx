@@ -13,8 +13,8 @@ export default function CardProduct({ data, isList }: { data: Product, isList?: 
   // isAdmin
   const { isAdmin } = useAdminAuth();
 
-  const priceNum = Number((data?.price as unknown as string | number | undefined) ?? 0);
-  const offerPriceNum = Number((data?.offerPrice as unknown as string | number | undefined) ?? 0);
+  const priceNum = data?.price ?? 0;
+  const offerPriceNum = data?.offerPrice ?? 0;
   const fixPrice = priceNum.toLocaleString('es-AR');
   const fixOfferPrice = offerPriceNum.toLocaleString('es-AR');
 

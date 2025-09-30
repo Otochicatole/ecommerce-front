@@ -48,11 +48,11 @@ export default function ProductDetail({ product }: ProductDetailProps) {
             <section className="mt-4 flex items-baseline  gap-3">
               {product.offer ? (
                 <>
-                  <span className="text-2xl font-bold text-rose-600">{`$${Number(product.offerPrice).toLocaleString('en-US')}`}</span>
-                  <span className="text-sm line-through text-gray-400">{`$${Number(product.price).toLocaleString('en-US')}`}</span>
+                  <span className="text-2xl font-bold text-rose-600">{`$${product.offerPrice.toLocaleString('en-US')}`}</span>
+                  <span className="text-sm line-through text-gray-400">{`$${product.price.toLocaleString('en-US')}`}</span>
                 </>
               ) : (
-                <span className="text-2xl font-bold text-gray-900">{`$${Number(product.price).toLocaleString('en-US')}`}</span>
+                <span className="text-2xl font-bold text-gray-900">{`$${product.price.toLocaleString('en-US')}`}</span>
               )}
             </section>
 
@@ -87,7 +87,7 @@ export default function ProductDetail({ product }: ProductDetailProps) {
             {/* Add to cart button */}
             <button
               type="button"
-              disabled={!product.stock || Number(product.stock) === 0}
+              disabled={!product.stock || product.stock === 0}
               className="mt-10 cursor-pointer w-full bg-blue-600 text-white font-medium py-3 rounded-xl shadow-md hover:bg-blue-700 disabled:opacity-40 disabled:cursor-not-allowed transition-all duration-200 active:scale-95"
               onClick={() => {
                 addItem(product, selectedSize ?? null);

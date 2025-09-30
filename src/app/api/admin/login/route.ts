@@ -10,6 +10,12 @@ import axios from "axios";
 import { z } from "zod";
 import { ADMIN_COOKIE_NAME, ADMIN_COOKIE_OPTS } from "@/shared/auth/cookie";
 
+// Simple in-memory rate limit per IP for this server instance.
+// For multi-instance deployments, replace with a shared store (Redis).
+const RATE_LIMIT_WINDOW_MS = 5 * 60 * 1000; // 5 minutes
+const MAX_ATTEMPTS = 10;
+const attempts: Map<string, { count: number; resetAt: number }> = new Map();
+
 const loginSchema = z.object({
   email: z.string().email(),
   password: z.string().min(6),
@@ -26,6 +32,25 @@ interface StrapiAdminLoginResponse {
 
 export async function POST(request: Request) {
   try {
+    // Basic IP-based rate limit
+    const ip = (request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip') || '')
+      .split(',')[0]
+      .trim() || 'unknown';
+    const now = Date.now();
+    const current = attempts.get(ip);
+    if (!current || current.resetAt < now) {
+      attempts.set(ip, { count: 1, resetAt: now + RATE_LIMIT_WINDOW_MS });
+    } else {
+      current.count += 1;
+      if (current.count > MAX_ATTEMPTS) {
+        const retryAfterSec = Math.ceil((current.resetAt - now) / 1000);
+        return NextResponse.json({ error: "Too many attempts. Try again later." }, {
+          status: 429,
+          headers: { 'Retry-After': String(retryAfterSec) },
+        });
+      }
+    }
+
     const body = await request.json();
     const { email, password } = loginSchema.parse(body);
 

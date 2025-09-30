@@ -12,6 +12,7 @@
 
 import { ApiResponseAllProducts, ApiResponseProductById } from "@/types/api/product-response";
 import http from "@/config/http";
+import { mapProductsNumericFields, mapProductNumericFields } from "./normalize";
 
 interface FetchProductsParams {
   page?: number;
@@ -31,7 +32,7 @@ export async function fetchProducts({ page = 1, pageSize = 20, offer, category }
 
   const url = `/api/products?${query.toString()}`;
   const { data } = await http.get<ApiResponseAllProducts>(url);
-  return data;
+  return { ...data, data: mapProductsNumericFields(data.data) };
 }
 
 // Alias para traer un lote acotado de productos (útil para catálogos pequeños)
@@ -42,7 +43,7 @@ export async function fetchAllProducts(): Promise<ApiResponseAllProducts> {
 // Obtiene un producto por id numérico
 export async function fetchProductById(id: string): Promise<ApiResponseProductById> {
   const { data } = await http.get<ApiResponseProductById>(`/api/products/${id}?populate=*`);
-  return data;
+  return { ...data, data: mapProductNumericFields(data.data) } as ApiResponseProductById;
 }
 
 // Obtiene un producto por documentId (v5) resolviendo vía listado filtrado
@@ -52,13 +53,13 @@ export async function fetchProductByDocumentId(documentId: string): Promise<ApiR
   query.append('populate', '*');
 
   const { data } = await http.get<ApiResponseAllProducts>(`/api/products?${query.toString()}`);
-  return { data: data.data[0], meta: data.meta } as unknown as ApiResponseProductById;
+  return { data: mapProductNumericFields(data.data[0]), meta: data.meta } as unknown as ApiResponseProductById;
 }
 
 // Búsqueda simple por nombre (contains), trae relaciones por populate
 export async function fetchProductsBySearch(search: string): Promise<ApiResponseAllProducts> {
   const { data } = await http.get<ApiResponseAllProducts>(`/api/products?filters[name][$contains]=${search}&populate=*`);
-  return data;
+  return { ...data, data: mapProductsNumericFields(data.data) };
 }
 
 

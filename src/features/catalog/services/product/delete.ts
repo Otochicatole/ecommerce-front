@@ -3,17 +3,8 @@
 import axios from 'axios';
 import env from '@/config';
 import { getApiTokenOrThrow } from '@/features/catalog/services/get-api-token';
+import { resolveNumericIdByDocumentId } from '@/features/catalog/services/resolve-by-document-id';
 
-async function resolveNumericIdByDocumentId(documentId: string): Promise<string> {
-  const { data } = await axios.get(`${env.strapiUrl}/api/products`, {
-    params: { 'filters[documentId][$eq]': documentId },
-    headers: { Accept: 'application/json' },
-  });
-  const entry = Array.isArray(data?.data) ? data.data[0] : undefined;
-  const resolvedId = entry?.id ?? entry?.attributes?.id;
-  if (!resolvedId) throw new Error('Product not found');
-  return String(resolvedId);
-}
 
 async function deleteProductWithFallback(idOrDocumentId: string, apiToken: string) {
   try {
@@ -30,7 +21,7 @@ async function deleteProductWithFallback(idOrDocumentId: string, apiToken: strin
     if (!(axios.isAxiosError(error) && error.response?.status === 404)) throw error;
     const isNumeric = /^\d+$/.test(idOrDocumentId);
     if (isNumeric) throw error;
-    const numericId = await resolveNumericIdByDocumentId(idOrDocumentId);
+    const numericId = await resolveNumericIdByDocumentId('products', idOrDocumentId);
     const { data } = await axios.request({
       method: 'DELETE',
       url: `${env.strapiUrl}/api/products/${encodeURIComponent(numericId)}`,

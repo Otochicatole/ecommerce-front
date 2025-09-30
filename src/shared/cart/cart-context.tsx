@@ -71,7 +71,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   const openCart = () => setIsOpen(true);
 
   const totalItems = useMemo(() => items.reduce((acc, it) => acc + it.quantity, 0), [items]);
-  const totalPrice = useMemo(() => items.reduce((acc, it) => acc + Number(it.product.offer ? it.product.offerPrice : it.product.price) * it.quantity, 0), [items]);
+  const totalPrice = useMemo(() => items.reduce((acc, it) => acc + (it.product.offer ? it.product.offerPrice : it.product.price) * it.quantity, 0), [items]);
 
   const value: CartContextValue & { totalPrice: number } = {
     items,

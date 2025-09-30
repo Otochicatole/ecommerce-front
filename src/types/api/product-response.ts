@@ -7,10 +7,10 @@ export interface Product {
     documentId: string;
     name: string;
     description: BlocksContent | null;
-    price: string;
-    offerPrice: string;
+    price: number;
+    offerPrice: number;
     offer: boolean;
-    stock: string;
+    stock: number;
     createdAt: string;
     updatedAt: string;
     publishedAt: string;
