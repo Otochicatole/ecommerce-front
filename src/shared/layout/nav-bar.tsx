@@ -73,7 +73,7 @@ export default function NavBar({ categories = [] }: NavBarProps) {
           isAdmin ? (
             <div className='flex items-center gap-2'>
               <Link
-                href='/admin/stock'
+                href='/admin'
                 className='px-3 py-2 text-sm border rounded-md hover:bg-gray-100'
               >
                 Admin
@@ -87,7 +87,7 @@ export default function NavBar({ categories = [] }: NavBarProps) {
             </div>
           ) : (
             <Link
-              href={'/login?redirect=' + encodeURIComponent('/admin/stock')}
+              href={'/login?redirect=' + encodeURIComponent('/admin')}
               className='px-3 py-2 text-sm border rounded-md hover:bg-gray-100'
             >
               Admin login
