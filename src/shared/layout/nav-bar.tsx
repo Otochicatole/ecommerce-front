@@ -7,10 +7,9 @@ import { useCart } from '@/shared/cart/cart-context';
 import { CategoryAttributes } from '@/types/api/category-response';
 import { ChevronDown } from 'lucide-react';
 import Link from 'next/link';
-import { useEffect, useState } from 'react';
-import { useAdminAuth } from '@/shared/auth/admin-auth-context';
-import { useRouter } from 'next/navigation';
 import GlobalSearchBar from '@shared/search/global-search-bar';
+import { useAdminAuth } from '@shared/auth/admin-auth-context';
+import { useRouter } from 'next/navigation';
 
 const links = [
   { href: '/', label: 'Home' },
@@ -20,14 +19,34 @@ const links = [
 
 type NavBarProps = { categories?: CategoryAttributes[] };
 
-export default function NavBar({ categories = [] }: NavBarProps) {
-  const [dropdownLinksCategories, setDropdownLinksCategories] = useState<CategoryAttributes[]>(categories);
+export default function NavBar({ categories = [] as CategoryAttributes[] }: NavBarProps) {
   const { isAdmin, logout, loading } = useAdminAuth();
-  const router = useRouter();
+  const router = useRouter()
 
   // categories are provided by server; keep an effect only if you plan to refresh client-side in the future
 
   const { totalItems, toggleCart } = useCart();
+
+  if (isAdmin) {
+    return (
+      <nav className='fixed top-0 items-center justify-between left-0 flex flex-row items-center w-full justify-between px-6 z-50 min-h-26 bg-white shadow-sm'>
+        <div />
+        {!loading && (
+          isAdmin && (
+            <div className='flex items-center gap-2'>
+              <button
+                onClick={async () => { await logout(); router.replace('/'); }}
+                className='px-3 py-2 text-sm border my-4 rounded-md hover:bg-gray-100'
+              >
+                Logout
+              </button>
+            </div>
+          )
+        )}
+      </nav>
+    );
+  }
+
 
   return (
     <nav className='fixed top-0 left-0 flex flex-row items-center w-full justify-between px-6 z-50 min-h-20 bg-white shadow-sm'>
@@ -53,7 +72,7 @@ export default function NavBar({ categories = [] }: NavBarProps) {
               <ChevronDown size={14} className='group-hover:rotate-180 transition-all' />
             </button>
             <div className='absolute right-0 hidden group-hover:block border border-black/5 z-20 w-56 py-2 overflow-hidden bg-white rounded-md shadow-xl'>
-              {dropdownLinksCategories.map((cat) => (
+              {categories.map((cat) => (
                 <Link
                   key={cat.documentId}
                   href={`/category/${encodeURIComponent(cat.type)}`}
@@ -69,31 +88,6 @@ export default function NavBar({ categories = [] }: NavBarProps) {
 
       {/* Right section: admin actions + cart */}
       <div className='flex items-center gap-2'>
-        {!loading && (
-          isAdmin ? (
-            <div className='flex items-center gap-2'>
-              <Link
-                href='/admin'
-                className='px-3 py-2 text-sm border rounded-md hover:bg-gray-100'
-              >
-                Admin
-              </Link>
-              <button
-                onClick={async () => { await logout(); router.replace('/'); }}
-                className='px-3 py-2 text-sm border rounded-md hover:bg-gray-100'
-              >
-                Logout
-              </button>
-            </div>
-          ) : (
-            <Link
-              href={'/login?redirect=' + encodeURIComponent('/admin')}
-              className='px-3 py-2 text-sm border rounded-md hover:bg-gray-100'
-            >
-              Admin login
-            </Link>
-          )
-        )}
         <button onClick={toggleCart} className='relative p-3 hover:bg-gray-100 rounded-lg active:scale-95 transition-transform'>
           <ShoppingCart size={24} />
           {totalItems > 0 && (

@@ -1,7 +1,10 @@
+"use client";
 import Link from "next/link";
 import { Package, ShoppingCart, FilePlus2, Boxes } from "lucide-react";
 
+
 export default function AdminDashboardPage() {
+
   const cards: Array<{ href: string; label: string; desc: string; Icon: React.ComponentType<{ size?: number }> }> = [
     { href: "/admin/stock", label: "Stock", desc: "ver y gestionar inventario", Icon: Boxes },
     { href: "/admin/sell", label: "Sell", desc: "ventas presenciales", Icon: ShoppingCart },
@@ -10,7 +13,7 @@ export default function AdminDashboardPage() {
   ];
 
   return (
-    <main className="p-6">
+    <main className="p-6 relative">
       <h1 className="text-2xl font-bold mb-6">Panel admin</h1>
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
         {cards.map(({ href, label, desc, Icon }) => (
