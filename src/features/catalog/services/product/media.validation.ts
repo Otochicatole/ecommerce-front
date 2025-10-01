@@ -1,6 +1,7 @@
 import type { AxiosError } from 'axios';
 
-const DEFAULT_MAX_BYTES = Math.floor(0.95 * 1024 * 1024);
+// 1 MiB exacto (1024 * 1024). Usamos MiB para evitar confusiones con MB decimales.
+const DEFAULT_MAX_BYTES = 1024 * 1024;
 
 export type UploadValidationConfig = {
   maxBytes?: number;
@@ -14,8 +15,9 @@ export function validateUploadFormData(formData: FormData, cfg?: UploadValidatio
       if (!(value.type && value.type.startsWith('image/'))) {
         throw new Error(`solo se permiten imágenes. archivo inválido: ${value.name}`);
       }
+      // Permitimos hasta e incluyendo 1 MiB
       if (value.size > maxBytes) {
-        throw new Error(`file ${value.name} exceeds 1MB limit`);
+        throw new Error(`file ${value.name} exceeds 1 MiB limit`);
       }
       files.push(value);
     }

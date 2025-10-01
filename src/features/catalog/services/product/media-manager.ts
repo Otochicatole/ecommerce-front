@@ -22,7 +22,8 @@ export interface UseMediaManager {
 
 export function useMediaManager(initialKeptIds: string[], initialPrimaryId: string | null, options?: MediaManagerOptions): UseMediaManager {
     const maxImageSizeMb = options?.maxImageSizeMb ?? 1;
-    const maxBytes = Math.floor(0.95 * 1024 * 1024 * (maxImageSizeMb / 1));
+    // 1 MiB exacto por MB lógico. Si el caller pasa 1, son 1048576 bytes.
+    const maxBytes = Math.floor(1024 * 1024 * (maxImageSizeMb / 1));
 
     const [keptMediaIds, setKeptMediaIdsState] = useState<string[]>(initialKeptIds);
     const [newFiles, setNewFiles] = useState<File[]>([]);
@@ -63,7 +64,7 @@ export function useMediaManager(initialKeptIds: string[], initialPrimaryId: stri
             }
         }
         if (failed.length > 0) {
-            setError(`estas imágenes exceden ${maxImageSizeMb}MB, quitá: ${failed.join(', ')}`);
+            setError(`estas imágenes exceden ${maxImageSizeMb} MiB, quitá: ${failed.join(', ')}`);
             return;
         }
         setError(null);

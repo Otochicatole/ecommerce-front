@@ -3,15 +3,21 @@ import axios from 'axios';
 type HeadersInput = { token: string };
 
 export async function httpUploadFiles(strapiUrl: string, files: File[], headersIn: HeadersInput) {
+  // Use native fetch + FormData to avoid axios/undici FormData incompatibilities in Node runtimes.
   const multipart = new FormData();
   for (const file of files) multipart.append('files', file);
-  const { data } = await axios.request({
+  const res = await fetch(`${strapiUrl}/api/upload`, {
     method: 'POST',
-    url: `${strapiUrl}/api/upload`,
     headers: { Authorization: `Bearer ${headersIn.token}` },
-    data: multipart,
+    body: multipart,
   });
-  return data;
+  if (!res.ok) {
+    const text = await res.text().catch(() => '');
+    throw new Error(text || `Upload failed with ${res.status}`);
+  }
+  const ct = res.headers.get('content-type') || '';
+  if (ct.includes('application/json')) return await res.json();
+  return await res.text();
 }
 
 export async function httpPutProductMedia(

@@ -19,7 +19,7 @@ export type CompressOptions = {
 
 export async function compressToUnderSize(file: File, options: CompressOptions = {}): Promise<File> {
   // Si ya cumple tamaño, devolvemos tal cual para evitar retrabajo.
-  const maxBytes = options.maxBytes ?? Math.floor(0.95 * 1024 * 1024);
+  const maxBytes = options.maxBytes ?? (1024 * 1024); // 1 MiB exacto por defecto
   if (file.size <= maxBytes) return file;
 
   // Elegimos mime de salida según original o preferencia de opciones.

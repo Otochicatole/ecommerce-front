@@ -76,7 +76,7 @@ export default function NavBar({ categories = [] as CategoryAttributes[] }: NavB
       className='fixed top-0 left-0 w-full z-50 bg-white shadow-sm'
       style={{ height: 'var(--nav-height)' }}
     >
-      <div className='mx-auto max-w-screen-xl h-full px-4 sm:px-6 lg:px-8 flex items-center justify-between gap-4'>
+      <div className=' lg:ml-30 max-w-screen-xl h-full px-4 sm:px-6 lg:px-8 flex items-center justify-between gap-4'>
         {/* left: mobile hamburger */}
         <div className='flex md:hidden items-center z-[60]'>
           <label className='cursor-pointer'>
@@ -119,6 +119,8 @@ export default function NavBar({ categories = [] as CategoryAttributes[] }: NavB
           </label>
         </div>
 
+
+
         {/* desktop: primary nav links */}
         <div className='hidden md:flex items-center gap-2 text-black/80'>
           {links.map((link, index) => (
@@ -148,7 +150,6 @@ export default function NavBar({ categories = [] as CategoryAttributes[] }: NavB
             </div>
           </div>
         </div>
-
         {/* search centered */}
         <div className='flex-1 px-2 md:px-6'>
           <GlobalSearchBar />
@@ -164,6 +165,7 @@ export default function NavBar({ categories = [] as CategoryAttributes[] }: NavB
             )}
           </button>
         </div>
+
       </div>
 
       {/* mobile dropdown panel with animation */}

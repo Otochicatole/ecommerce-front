@@ -305,7 +305,7 @@ export default function AdmProductDetail({ product, saveAction, uploadMediaActio
                                     className="mt-1 w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 outline-none focus:ring-2 focus:ring-gray-900/20"
                                 />
                             </div>
-                            <RelationsSelector />
+                            {RelationsSelector()}
                             <div>
                                 <label className="block text-sm font-medium text-gray-700">price</label>
                                 <input
@@ -349,7 +349,7 @@ export default function AdmProductDetail({ product, saveAction, uploadMediaActio
                                     <span className={`inline-block h-5 w-5 transform rounded-full bg-white transition ${show ? 'translate-x-5' : 'translate-x-1'}`} />
                                 </button>
                             </div>
-                            <MediaManagerPanel />
+                            {MediaManagerPanel()}
                             <div className={`md:col-span-3 flex ${hasDelete ? 'justify-between' : 'justify-end'}`}>
                                 {hasDelete && (
                                     <button type="button" onClick={() => setConfirmOpen(true)} className="px-4 py-2 rounded-md bg-red-600 text-white text-sm disabled:opacity-60">
