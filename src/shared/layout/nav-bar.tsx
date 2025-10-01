@@ -8,8 +8,6 @@ import { CategoryAttributes } from '@/types/api/category-response';
 import { ChevronDown } from 'lucide-react';
 import Link from 'next/link';
 import GlobalSearchBar from '@shared/search/global-search-bar';
-import { useAdminAuth } from '@shared/auth/admin-auth-context';
-import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 
 const links = [
@@ -22,8 +20,6 @@ type MinimalCategory = { documentId?: string; type: string };
 type NavBarProps = { categories?: Array<CategoryAttributes | MinimalCategory> };
 
 export default function NavBar({ categories = [] as CategoryAttributes[] }: NavBarProps) {
-  const { isAdmin, logout, loading } = useAdminAuth();
-  const router = useRouter()
   const [mobileOpen, setMobileOpen] = useState(false);
   const [mobileCatsOpen, setMobileCatsOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
@@ -45,31 +41,6 @@ export default function NavBar({ categories = [] as CategoryAttributes[] }: NavB
       </nav>
     );
   }
-
-  if (isAdmin) {
-    return (
-      <nav
-        className='fixed top-0 left-0 w-full z-50 bg-white shadow-sm'
-        style={{ height: 'var(--nav-height)' }}
-      >
-        <div className='mx-auto max-w-screen-xl h-full px-4 sm:px-6 lg:px-8 flex items-center justify-end'>
-          {!loading && (
-            isAdmin && (
-              <div className='flex items-center gap-2'>
-                <button
-                  onClick={async () => { await logout(); router.replace('/'); }}
-                  className='px-3 py-2 text-sm border rounded-md hover:bg-gray-100'
-                >
-                  Logout
-                </button>
-              </div>
-            )
-          )}
-        </div>
-      </nav>
-    );
-  }
-
 
   return (
     <nav

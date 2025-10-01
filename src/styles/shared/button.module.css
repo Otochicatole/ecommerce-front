@@ -25,11 +25,11 @@
 
 .secondary {
   color: #fff;
-  background-color: #6b7280;
+  background-color: #02369e;
 }
 
 .secondary:hover {
-  background-color: #4b5563;
+  background-color: #012f6e;
 }
 
 .secondary:focus {

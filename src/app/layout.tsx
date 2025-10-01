@@ -1,11 +1,10 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
-import NavBar from "@/shared/layout/nav-bar";
+import AppShell from "@/shared/layout/app-shell";
 import { fetchAllCategories } from "@ecommerce-front/features/catalog/services/type-product/get";
 import { SearchProvider } from "@/shared/search/search-context";
 import { CartProvider } from "@/shared/cart/cart-context";
-import CartAside from "@/shared/cart/cart-aside";
 import { Toaster } from "react-hot-toast";
 import { AdminAuthProvider } from "@/shared/auth/admin-auth-context";
 
@@ -41,11 +40,7 @@ export default async function RootLayout({
         <AdminAuthProvider>
           <CartProvider>
             <SearchProvider>
-              <NavBar categories={categories} />
-              <CartAside />
-              <main className="mt-16 sm:mt-[72px] lg:mt-20">
-                {children}
-              </main>
+              <AppShell categories={categories}>{children}</AppShell>
             </SearchProvider>
             <Toaster
               position="bottom-right"
