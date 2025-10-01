@@ -102,7 +102,7 @@ export function PosSell({ initialProducts = [] }: PosSellProps) {
                 type="button"
                 disabled={!p.stock || p.stock <= 0}
                 onClick={(e) => { e.stopPropagation(); setCart((c) => addToCart(c, p, 1)); }}
-                className="h-9 w-9 inline-flex items-center justify-center rounded-full bg-gray-900 text-white shadow-md hover:scale-105 active:scale-95 transition disabled:opacity-40"
+                className="h-9 w-9 min-w-9 min-h-9 inline-flex items-center justify-center rounded-full bg-gray-900 text-white shadow-md hover:scale-105 active:scale-95 transition disabled:opacity-40"
                 aria-label="agregar"
               >
                 <Plus size={16} />

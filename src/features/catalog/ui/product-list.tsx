@@ -84,14 +84,14 @@ export default function ProductList({ products, onSearchActiveChange }: ProductG
 
   return (
   <>
-      <div className="flex items-center justify-between px-3">
+      <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between px-3">
         <SearchBar value={query} onChange={setQuery} />
-        <div className="flex min-w-[300px] gap-2">
-          <Link href="/admin/create" className="inline-flex items-center rounded-md bg-gray-900 px-3 py-2 text-xs text-white hover:bg-gray-800">
+        <div className="flex gap-2 sm:ml-3 overflow-x-auto sm:overflow-visible whitespace-nowrap py-1 -mx-3 px-3 sm:mx-0 sm:px-0">
+          <Link href="/admin/create" className="inline-flex items-center rounded-md bg-gray-900 px-3 py-2 text-xs text-white hover:bg-gray-800 cursor-pointer">
             crear producto
           </Link>
-          <button type="button" onClick={() => setOpenSize(true)} className="inline-flex items-center rounded-md bg-gray-700 px-3 py-2 text-xs text-white hover:bg-gray-600">crear size</button>
-          <button type="button" onClick={() => setOpenType(true)} className="inline-flex items-center rounded-md bg-gray-700 px-3 py-2 text-xs text-white hover:bg-gray-600">crear type</button>
+          <button type="button" onClick={() => setOpenSize(true)} className="inline-flex items-center rounded-md bg-gray-700 px-3 py-2 text-xs text-white hover:bg-gray-600 cursor-pointer">crear size</button>
+          <button type="button" onClick={() => setOpenType(true)} className="inline-flex items-center rounded-md bg-gray-700 px-3 py-2 text-xs text-white hover:bg-gray-600 cursor-pointer">crear type</button>
         </div>
       </div>
         {isSearching ? (

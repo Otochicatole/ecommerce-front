@@ -43,8 +43,8 @@ export function SalesFilters() {
 
   return (
     <div className="w-full bg-white/80 backdrop-blur-xl rounded-2xl shadow ring-1 ring-black/5 p-3">
-      <div className="flex flex-wrap gap-3 items-end">
-        <div className="flex-1 min-w-[240px]">
+      <div className="flex flex-col gap-3">
+        <div className="w-full min-w-[240px]">
           <div className="relative">
             <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500" />
             <input
@@ -58,14 +58,14 @@ export function SalesFilters() {
           </div>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-wrap">
           <input
             ref={fromRef}
             type="date"
             value={from}
             onChange={(e) => { setFrom(e.target.value); applyFilters({ from: e.target.value }); }}
             placeholder="Desde"
-            className="px-3 py-2 rounded-full bg-gray-100 hover:bg-gray-200 text-sm border-0 ring-1 ring-transparent focus:ring-gray-300"
+            className="px-3 py-2 rounded-full bg-gray-100 hover:bg-gray-200 text-xs sm:text-sm border-0 ring-1 ring-transparent focus:ring-gray-300 w-auto self-start"
             aria-label="Desde"
           />
           <input
@@ -74,11 +74,11 @@ export function SalesFilters() {
             value={to}
             onChange={(e) => { setTo(e.target.value); applyFilters({ to: e.target.value }); }}
             placeholder="Hasta"
-            className="px-3 py-2 rounded-full bg-gray-100 hover:bg-gray-200 text-sm border-0 ring-1 ring-transparent focus:ring-gray-300"
+            className="px-3 py-2 rounded-full bg-gray-100 hover:bg-gray-200 text-xs sm:text-sm border-0 ring-1 ring-transparent focus:ring-gray-300 w-auto self-start"
             aria-label="Hasta"
           />
 
-          <div className="ml-2 inline-flex rounded-full bg-gray-100 p-1">
+          <div className="ml-0 sm:ml-2 flex flex-wrap gap-2 rounded-full bg-gray-100 p-1 w-fit">
             {[
               { k: 'hoy', label: 'Hoy', calc: () => {
                 const now = new Date();
@@ -91,12 +91,12 @@ export function SalesFilters() {
               { k: '7', label: '7 días', calc: () => { const to = new Date(); const from = new Date(); from.setDate(to.getDate()-6); return { from: from.toISOString().slice(0,10), to: to.toISOString().slice(0,10) }; } },
               { k: '30', label: '30 días', calc: () => { const to = new Date(); const from = new Date(); from.setDate(to.getDate()-29); return { from: from.toISOString().slice(0,10), to: to.toISOString().slice(0,10) }; } },
             ].map((p) => (
-              <button key={p.k} type="button" onClick={() => { const r = p.calc(); setFrom(r.from); setTo(r.to); applyFilters({ from: r.from, to: r.to }); }} className="px-3 py-1.5 text-xs rounded-full bg-white shadow-sm hover:shadow">
+              <button key={p.k} type="button" onClick={() => { const r = p.calc(); setFrom(r.from); setTo(r.to); applyFilters({ from: r.from, to: r.to }); }} className="px-3 py-1.5 text-xs rounded-full bg-white shadow-sm hover:shadow cursor-pointer">
                 {p.label}
               </button>
             ))}
           </div>
-          <button type="button" onClick={() => { setQ(''); setFrom(''); setTo(''); router.push('/admin/sales'); }} className="px-4 py-2 text-sm rounded-full bg-gray-100">Limpiar</button>
+          <button type="button" onClick={() => { setQ(''); setFrom(''); setTo(''); router.push('/admin/sales'); }} className="px-4 py-2 text-xs sm:text-sm rounded-full bg-gray-100 w-fit self-start cursor-pointer">Limpiar</button>
         </div>
       </div>
     </div>

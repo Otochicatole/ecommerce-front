@@ -16,6 +16,8 @@ export default async function StockPage({ searchParams }: AllPageProps) {
   const pageCount = meta.pagination.pageCount;
 
   return (
-    <StockContent products={products} currentPage={currentPage} pageCount={pageCount} />
+    <div className="p-4 mt-16 sm:mt-[72px] lg:mt-20 max-w-screen-xl mx-auto">
+      <StockContent products={products} currentPage={currentPage} pageCount={pageCount} />
+    </div>
   );
 }

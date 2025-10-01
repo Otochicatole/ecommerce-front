@@ -28,17 +28,19 @@ export default async function SalesListPage({ searchParams }: { searchParams: Pr
   const pageCount = Math.max(1, Number(pagination?.pageCount || 1));
   const showTotal = Boolean(q || ('q' in sp) || ('from' in sp) || ('to' in sp));
   const totalAmount = showTotal ? await getSalesTotalAmount({ q, from, to }) : 0;
+  const cardPadTop = showTotal ? 'pt-10 sm:pt-0' : '';
   return (
     <div className="p-4 mt-16 sm:mt-[72px] lg:mt-20">
       <div className="flex items-center justify-between mb-4">
         <h1 className="text-2xl font-bold">Ventas</h1>
       </div>
       <SalesFilters />
-      <div className="bg-white/80 mt-3 relative backdrop-blur-xl rounded-2xl shadow ring-1 ring-black/5">
+      <div className={`bg-white/80 mt-3 relative backdrop-blur-xl rounded-2xl shadow ring-1 ring-black/5 ${cardPadTop}`}>
         {showTotal && (
           <div className="absolute top-0 right-0 flex justify-end px-4 py-2 text-lg font-semibold text-gray-900">Total: ${totalAmount.toLocaleString('es-AR')}</div>
         )}
-        <table className="min-w-full text-sm">
+        <div className="overflow-x-auto px-2 sm:px-4">
+        <table className="w-full text-xs sm:text-sm">
           <thead>
             <tr className="text-left text-gray-600">
               <th className="px-4 py-3">Producto</th>
@@ -61,8 +63,9 @@ export default async function SalesListPage({ searchParams }: { searchParams: Pr
             )}
           </tbody>
         </table>
+        </div>
         {pageCount > 1 && (
-          <div className="flex justify-center items-center mt-10 px-4 py-3">
+          <div className="flex justify-start sm:justify-center items-center mt-10 px-4 py-3 overflow-x-auto">
             {(() => {
               const paramsBase = new URLSearchParams();
               if (q) paramsBase.set('q', q);
@@ -80,12 +83,12 @@ export default async function SalesListPage({ searchParams }: { searchParams: Pr
               start = Math.max(1, end - MAX_VISIBLE_PAGES + 1);
               const pages = Array.from({ length: end - start + 1 }, (_, i) => start + i);
               return (
-                <nav className="flex items-center gap-2">
-                  <Link href={makeHref(Math.max(1, currentPage - 1))} className={`px-3 py-1.5 rounded-full text-sm ${currentPage === 1 ? 'pointer-events-none opacity-40 bg-gray-100' : 'bg-white shadow hover:shadow-md'}`}>Prev</Link>
+                <nav className="flex items-center gap-2 whitespace-nowrap">
+                  <Link href={makeHref(Math.max(1, currentPage - 1))} className={`px-3 py-1.5 rounded-full text-sm cursor-pointer ${currentPage === 1 ? 'pointer-events-none opacity-40 bg-gray-100' : 'bg-white shadow hover:shadow-md'}`}>Prev</Link>
                   {pages.map((p) => (
-                    <Link key={p} href={makeHref(p)} className={`px-3 py-1.5 rounded-full text-sm ${p === currentPage ? 'bg-blue-600 text-white' : 'bg-white shadow hover:shadow-md'}`}>{p}</Link>
+                    <Link key={p} href={makeHref(p)} className={`px-3 py-1.5 rounded-full text-sm cursor-pointer ${p === currentPage ? 'bg-blue-600 text-white' : 'bg-white shadow hover:shadow-md'}`}>{p}</Link>
                   ))}
-                  <Link href={makeHref(Math.min(pageCount, currentPage + 1))} className={`px-3 py-1.5 rounded-full text-sm ${currentPage === pageCount ? 'pointer-events-none opacity-40 bg-gray-100' : 'bg-white shadow hover:shadow-md'}`}>Next</Link>
+                  <Link href={makeHref(Math.min(pageCount, currentPage + 1))} className={`px-3 py-1.5 rounded-full text-sm cursor-pointer ${currentPage === pageCount ? 'pointer-events-none opacity-40 bg-gray-100' : 'bg-white shadow hover:shadow-md'}`}>Next</Link>
                 </nav>
               );
             })()}
