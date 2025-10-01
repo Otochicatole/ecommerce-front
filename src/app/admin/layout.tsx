@@ -34,7 +34,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
   }
 
   return (
-    <>{children}</>
+    <div className="min-h-screen">{children}</div>
   );
 }
 

@@ -4,10 +4,9 @@ import env from "@/config";
 import Image from "next/image";
 import styles from "@/styles/catalog/card-product.module.css";
 import { useRouter } from "next/navigation";
-import { BlocksRenderer } from "@strapi/blocks-react-renderer";
 import { useAdminAuth } from "@shared/auth/admin-auth-context";
 
-export default function CardProduct({ data, isList }: { data: Product, isList?: boolean }) {
+export default function CardProduct({ data, isList = false }: { data: Product; isList?: boolean }) {
   const router = useRouter();
   const URL = env.strapiUrl;
   // isAdmin
@@ -30,47 +29,60 @@ export default function CardProduct({ data, isList }: { data: Product, isList?: 
   const imageUrl = mainImage?.url ? `${URL}${mainImage.url}` : "/nullimg.webp";
   const imageAlt = mainImage?.alternativeText || "Producto";
 
-  const articleClass = isList
-    ? (data.show ? styles.articleList : styles.articleListDisabled)
-    : (data.show ? styles.article : styles.articleDisabled);
+  // legacy classes kept for compatibility but unused in modern card
 
-  return (
-    <article onClick={handleClick} className={articleClass}>
-      {data.offer && <span className={styles.offer}>Oferta Exclusiva</span>}
-      <figure className={styles.figure}>
-        <Image className="object-cover w-fit h-fit" loading="lazy" src={imageUrl} alt={imageAlt} width={400} height={400} unoptimized />
-      </figure>
-      <section className={styles.section}>
-        <div className={styles.header}>
-          <div className={styles["header-text"]}>
-            <h1 className={styles.title}>{data.name}</h1>
-            <div className={styles.desc}>
-              {data?.description ? <BlocksRenderer content={data.description} /> : <p>No description available.</p>}
-            </div>
+  const createdAt = data?.createdAt ? new Date(data.createdAt) : null;
+  const isNew = createdAt ? (Date.now() - createdAt.getTime()) / (1000 * 60 * 60 * 24) < 14 : false;
+  const badgeText = isNew ? 'NEW' : (data.offer ? 'OFERTA' : '');
+
+  if (isList) {
+    return (
+      <article onClick={handleClick} className={`${styles.modernCardList} ${!data.show ? styles.modernCardDisabled : ''}`}>
+        {badgeText && (
+          <div className={styles.cardNewBadge}><p>{badgeText}</p></div>
+        )}
+        <div className={styles.cardListImageWrap}>
+          <Image className={styles.cardTopImage} loading="lazy" src={imageUrl} alt={imageAlt} width={320} height={240} unoptimized />
+        </div>
+        <div className={styles.cardListRight}>
+          <p className={styles.cardBottomTitle}>{data.name}</p>
+          <div className={`${styles.cardBottomPrice} ${styles.cardBottomPriceList}`}>
+            {data.offer ? (
+              <>
+                <span className={styles.cardOldPrice}>${fixPrice}</span>
+                <span className={`${styles.cardPrice} ${styles.cardPriceGreen}`}>${fixOfferPrice}</span>
+              </>
+            ) : (
+              <span className={`${styles.cardPrice} ${styles.cardPriceBlue}`}>${fixPrice}</span>
+            )}
           </div>
         </div>
-        <footer className={styles.footer}>
-          <div className={styles.footerContent}>
-            <div className={styles.priceContainer}>
-              {data.offer ? (
-                <>
-                  <p className={styles.offerPrice}>${fixPrice}</p>
-                  <p className={styles.price}>
-                    ${fixOfferPrice}
-                    <span className={styles.discount}>{priceNum > 0 ? Math.round(((priceNum - offerPriceNum) / priceNum) * 100) : 0}% OFF</span>
-                  </p>
-                </>
-              ) : (
-                <span className={styles.price}>${fixPrice}</span>
-              )}
-            </div>
-          </div>
-          <div className={styles.footerDescription}>
-            <br />
-            {data.show ? <span style={{ color: "#4ea84e" }}>En stock</span> : <span style={{ color: "#9b1313", fontSize: 16 }}>Sin stock</span>}
-          </div>
-        </footer>
-      </section>
+      </article>
+    );
+  }
+
+  return (
+    <article onClick={handleClick} className={`${styles.modernCard} ${!data.show ? styles.modernCardDisabled : ''}`}>
+      {badgeText && (
+        <div className={styles.cardNewBadge}><p>{badgeText}</p></div>
+      )}
+      <div className={styles.cardBrightFilter} />
+      <div className={styles.cardTop}>
+        <Image className={styles.cardTopImage} loading="lazy" src={imageUrl} alt={imageAlt} width={600} height={420} unoptimized />
+      </div>
+      <div className={styles.cardBottom}>
+        <p className={styles.cardBottomTitle}>{data.name}</p>
+        <div className={styles.cardBottomPrice}>
+          {data.offer ? (
+            <>
+              <span className={styles.cardOldPrice}>${fixPrice}</span>
+              <span className={`${styles.cardPrice} ${styles.cardPriceGreen}`}>${fixOfferPrice}</span>
+            </>
+          ) : (
+            <span className={`${styles.cardPrice} ${styles.cardPriceBlue}`}>${fixPrice}</span>
+          )}
+        </div>
+      </div>
     </article>
   );
 }

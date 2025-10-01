@@ -63,13 +63,13 @@ export default function SearchBar() {
       <input
         type='search'
         placeholder='Search'
-        className='bg-black/2 border border-black/10 h-10 px-6 py-4 w-full pl-10 rounded-full focus:outline-none'
+        className='bg-black/2 border border-black/10 h-12 px-6 w-full pl-12 rounded-full focus:outline-none'
         value={query}
         onChange={handleChange}
         onKeyDown={handleKeyDown}
       />
-      <button type='button' onClick={handleClickSearch} className='absolute left-0 top-0 mt-3 ml-4'>
-        <Search size={16} />
+      <button type='button' onClick={handleClickSearch} className='absolute left-0 top-0 h-12 w-12 grid place-items-center'>
+        <Search size={18} />
       </button>
     </div>
   );

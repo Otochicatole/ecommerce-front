@@ -43,7 +43,7 @@ export default async function RootLayout({
             <SearchProvider>
               <NavBar categories={categories} />
               <CartAside />
-              <main className="mt-[106px]">
+              <main className="mt-16 sm:mt-[72px] lg:mt-20">
                 {children}
               </main>
             </SearchProvider>

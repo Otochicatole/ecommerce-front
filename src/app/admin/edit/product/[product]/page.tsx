@@ -21,7 +21,7 @@ export default async function Page({ params }: { params: Promise<{ product: stri
 
     return (
         <>
-            <h1 className="text-2xl font-bold pt-6  pl-10">Editar producto</h1>
+            <h1 className="text-2xl font-bold pt-6 pl-10 mt-16 sm:mt-[72px] lg:mt-20">Editar producto</h1>
             <AdmProductDetail
                 product={productData}
                 saveAction={updateProduct}

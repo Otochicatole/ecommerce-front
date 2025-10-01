@@ -29,7 +29,7 @@ export default async function SalesListPage({ searchParams }: { searchParams: Pr
   const showTotal = Boolean(q || ('q' in sp) || ('from' in sp) || ('to' in sp));
   const totalAmount = showTotal ? await getSalesTotalAmount({ q, from, to }) : 0;
   return (
-    <div className="p-4">
+    <div className="p-4 mt-16 sm:mt-[72px] lg:mt-20">
       <div className="flex items-center justify-between mb-4">
         <h1 className="text-2xl font-bold">Ventas</h1>
       </div>
