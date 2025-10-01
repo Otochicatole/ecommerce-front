@@ -8,7 +8,7 @@ export const ADMIN_COOKIE_OPTS = {
   sameSite: 'strict' as const,
   secure: process.env.NODE_ENV === 'production',
   path: '/',
-  maxAge: 60 * 15, // 15 minutes
+  maxAge: 60 * 60, // 1 hour
 };
 
 

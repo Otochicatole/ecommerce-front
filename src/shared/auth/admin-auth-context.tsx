@@ -69,12 +69,12 @@ export function AdminAuthProvider({ children }: { children: React.ReactNode }) {
     setUser(null);
   }, []);
 
-  // Idle timeout: cierra sesión tras 15 minutos sin interacción
+  // Idle timeout: cierra sesión tras 1 hora sin interacción
   useEffect(() => {
     let timer: ReturnType<typeof setTimeout> | undefined;
     const reset = () => {
       if (timer) clearTimeout(timer);
-      timer = setTimeout(() => { void logout(); }, 15 * 60 * 1000);
+      timer = setTimeout(() => { void logout(); }, 60 * 60 * 1000);
     };
     const events = ['click','keydown','mousemove','scroll','focus'];
     events.forEach(e => window.addEventListener(e, reset));
