@@ -1,0 +1,33 @@
+.overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  display: grid;
+  place-items: center;
+  backdrop-filter: blur(8px);
+  background: rgba(0,0,0,0.7);
+  pointer-events: all;
+}
+
+.shadow {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+:global(body:has(.fl-overlay)) {
+  overflow: hidden;
+  touch-action: none;
+  overscroll-behavior: none;
+}
+
+:global(html:has(.fl-overlay)),
+:global(#__next:has(.fl-overlay)) {
+  overflow: hidden !important;
+  height: 100%;
+}
+:global(body:has(.fl-overlay) main) {
+  overflow: hidden !important;
+}

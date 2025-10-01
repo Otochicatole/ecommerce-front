@@ -10,6 +10,7 @@ import { useMediaManager } from "@/features/catalog/services/product/media-manag
 import { MediaGrid } from "@/features/catalog/ui/media-grid";
 import { NewFilesDropzone } from "@/features/catalog/ui/new-files-dropzone";
 import { ConfirmDialog } from "@/shared/ui/confirm-dialog";
+import FullscreenLoader from "@/shared/ui/fullscreen-loader";
 
 interface ProductDetailProps {
     product: Product;
@@ -362,6 +363,7 @@ export default function AdmProductDetail({ product, saveAction, uploadMediaActio
                             </div>
                         </form>
                     </header>
+                    <FullscreenLoader open={isSaving} label="LOADING" />
                     {hasDelete && (
                         <ConfirmDialog
                             open={confirmOpen}
