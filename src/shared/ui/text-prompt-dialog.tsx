@@ -17,7 +17,7 @@ interface TextPromptDialogProps {
   contentBelow?: ReactNode;
 }
 
-export function TextPromptDialog({ open, title = 'crear', label, placeholder, initialValue = '', description, confirmText = 'guardar', cancelText = 'cancelar', validate, onConfirm, onCancel, loading = false, contentBelow }: TextPromptDialogProps) {
+export function TextPromptDialog({ open, title = 'crear', label, placeholder, initialValue = '', description, confirmText = 'Confirmar', cancelText = 'Cancelar', validate, onConfirm, onCancel, loading = false, contentBelow }: TextPromptDialogProps) {
   const [value, setValue] = useState<string>(initialValue);
   const [error, setError] = useState<string | null>(null);
 
@@ -32,12 +32,12 @@ export function TextPromptDialog({ open, title = 'crear', label, placeholder, in
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center">
-      <div className="absolute inset-0 bg-black/40" onClick={onCancel} />
-      <div className="relative z-10 w-[92%] max-w-sm rounded-xl bg-white p-4 shadow-xl">
-        {title && <h2 className="text-sm font-semibold text-gray-900">{title}</h2>}
-        {description && <div className="mt-2 text-xs text-gray-700">{description}</div>}
+      <div className="absolute inset-0 bg-black/50 backdrop-blur-xl" onClick={onCancel} />
+      <div className="relative z-10 w-[92%] max-w-3xl rounded-xl bg-white p-4 shadow-xl">
+        {title && <h2 className="text-xl font-semibold text-gray-900">{title}</h2>}
+        {description && <div className="mt-2 text-lg text-gray-700">{description}</div>}
         <div className="mt-3">
-          <label className="block text-xs font-medium text-gray-700">{label}</label>
+          <label className="block text-lg font-medium text-gray-700">{label}</label>
           <input
             type="text"
             value={value}
@@ -56,10 +56,10 @@ export function TextPromptDialog({ open, title = 'crear', label, placeholder, in
           </div>
         )}
         <div className="mt-4 flex items-center justify-end gap-2">
-          <button type="button" className="px-3 py-1.5 text-xs rounded-md border border-gray-300 text-gray-700 bg-white hover:bg-gray-50" onClick={onCancel} disabled={loading}> {cancelText} </button>
+          <button type="button" className="px-3 py-1.5 text-lg cursor-pointer rounded-md border border-gray-300 text-gray-700 bg-white hover:bg-gray-50" onClick={onCancel} disabled={loading}> {cancelText} </button>
           <button
             type="button"
-            className="px-3 py-1.5 text-xs rounded-md bg-gray-900 text-white hover:bg-gray-800 disabled:opacity-60"
+            className="px-3 py-1.5 text-lg rounded-md bg-gray-900 cursor-pointer text-white hover:bg-gray-800 disabled:opacity-60"
             onClick={async () => {
               const message = validate?.(value) ?? null;
               if (message) {
@@ -70,7 +70,7 @@ export function TextPromptDialog({ open, title = 'crear', label, placeholder, in
             }}
             disabled={loading}
           >
-            {loading ? 'guardando...' : confirmText}
+            {loading ? 'Guardando...' : confirmText}
           </button>
         </div>
       </div>

@@ -115,14 +115,14 @@ export default function ProductList({ products, onSearchActiveChange }: ProductG
       )}
       <TextPromptDialog
         open={openSize}
-        title="crear size"
-        label="size"
-        placeholder="ej: XL"
+        title="Crear size"
+        label="Size"
+        placeholder=""
         validate={(v) => {
           const trimmed = v.trim();
-          if (!trimmed) return 'requerido';
+          if (!trimmed) return 'Requerido';
           const normalized = trimmed.toUpperCase().replace(/[^A-Z0-9]/g, '');
-          if (!/^[A-Z0-9]+$/.test(normalized)) return 'solo letras o números';
+          if (!/^[A-Z0-9]+$/.test(normalized)) return 'Solo letras o números';
           return null;
         }}
         onCancel={() => setOpenSize(false)}
@@ -140,7 +140,7 @@ export default function ProductList({ products, onSearchActiveChange }: ProductG
                       setIsSaving(true);
                       await deleteSize(String(s.documentId ?? s.id));
                       setSizes(prev => prev.filter(x => x.id !== s.id));
-                      toast.success('size eliminado');
+                      toast.success('Size eliminado');
                     } finally {
                       setIsSaving(false);
                     }
@@ -150,7 +150,7 @@ export default function ProductList({ products, onSearchActiveChange }: ProductG
                 </button>
               </li>
             ))}
-            {sizes.length === 0 && <li className="px-3 py-2 text-gray-500">no hay sizes</li>}
+            {sizes.length === 0 && <li className="px-3 py-2 text-gray-500">No hay sizes</li>}
           </ul>
         )}
         onConfirm={async (value) => {
@@ -168,26 +168,26 @@ export default function ProductList({ products, onSearchActiveChange }: ProductG
       />
       <TextPromptDialog
         open={openType}
-        title="crear type"
-        label="type"
-        placeholder="ej: remera"
+        title="Crear una nueva categoría"
+        label="Categoría"
+        placeholder=""
         validate={(v) => {
           const trimmed = v.trim();
-          if (!trimmed) return 'requerido';
+          if (!trimmed) return 'Requerido';
           const normalized = trimmed.toLowerCase().replace(/[^a-z0-9\s]/g, ' ').replace(/\s+/g, ' ').trim();
-          if (!/^[a-z0-9\s]+$/.test(normalized)) return 'solo letras, números y espacios';
+          if (!/^[a-z0-9\s]+$/.test(normalized)) return 'Solo letras, números y espacios';
           return null;
         }}
         onCancel={() => setOpenType(false)}
         loading={isSaving}
         contentBelow={(
-          <ul className="divide-y divide-gray-200 text-sm">
+          <ul className="divide-y divide-gray-200 text-lg">
             {types.map((t) => (
               <li key={t.id} className="flex items-center justify-between px-3 py-2">
                 <span>{t.type}</span>
                 <button
                   type="button"
-                  className="text-red-600 hover:underline cursor-pointer"
+                  className="text-black hover:text-red-600 hover:underline cursor-pointer"
                   onClick={async () => {
                     try {
                       setIsSaving(true);
@@ -195,7 +195,7 @@ export default function ProductList({ products, onSearchActiveChange }: ProductG
                       const { deleteTypeProduct } = await import("@ecommerce-front/features/catalog/services/type-product/mutate");
                       await deleteTypeProduct(String(t.documentId ?? t.id));
                       setTypes(prev => prev.filter(x => x.id !== t.id));
-                      toast.success('type eliminado');
+                      toast.success('Categoría eliminada');
                     } finally {
                       setIsSaving(false);
                     }
@@ -205,7 +205,7 @@ export default function ProductList({ products, onSearchActiveChange }: ProductG
                 </button>
               </li>
             ))}
-            {types.length === 0 && <li className="px-3 py-2 text-gray-500">no hay types</li>}
+            {types.length === 0 && <li className="px-3 py-2 text-gray-500">No hay types</li>}
           </ul>
         )}
         onConfirm={async (value) => {
