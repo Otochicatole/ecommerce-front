@@ -19,7 +19,7 @@ export default function SearchBar({ value, onChange }: SearchBarProps) {
                 <input
                     className={styles.input}
                     type="search"
-                    placeholder="Search"
+                    placeholder="Buscar"
                     value={value}
                     onChange={(e) => onChange(e.target.value)}
                 />

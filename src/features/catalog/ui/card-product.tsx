@@ -42,7 +42,7 @@ export default function CardProduct({ data, isList = false }: { data: Product; i
           <div className={styles.cardNewBadge}><p>{badgeText}</p></div>
         )}
         <div className={styles.cardListImageWrap}>
-          <Image className={styles.cardTopImage} loading="lazy" src={imageUrl} alt={imageAlt} width={320} height={240} unoptimized />
+          <Image className={styles.cardTopImageList} loading="lazy" src={imageUrl} alt={imageAlt} width={320} height={240} unoptimized />
         </div>
         <div className={styles.cardListRight}>
           <p className={styles.cardBottomTitle}>{data.name}</p>

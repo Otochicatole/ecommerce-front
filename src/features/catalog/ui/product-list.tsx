@@ -38,7 +38,7 @@ export default function ProductList({ products, onSearchActiveChange }: ProductG
         ]);
         setSizes(Array.isArray(s?.data) ? s.data : []);
         setTypes(Array.isArray(t?.data) ? t.data : []);
-      } catch {}
+      } catch { }
     })();
   }, []);
 
@@ -83,30 +83,36 @@ export default function ProductList({ products, onSearchActiveChange }: ProductG
   }
 
   return (
-  <>
-      <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between px-3">
+    <>
+      <div className="flex flex-col gap-2 sm:items-center sm:justify-between px-3 bg-[#fefefe] rounded-lg backdrop-blur-xl shadow-lg p-3">
         <SearchBar value={query} onChange={setQuery} />
-        <div className="flex gap-2 sm:ml-3 overflow-x-auto sm:overflow-visible whitespace-nowrap py-1 -mx-3 px-3 sm:mx-0 sm:px-0">
-          <Link href="/admin/create" className="inline-flex items-center rounded-md bg-gray-900 px-3 py-2 text-xs text-white hover:bg-gray-800 cursor-pointer">
-            crear producto
+        <div className="flex gap-2 sm:ml-3 overflow-x-auto w-full sm:overflow-visible whitespace-nowrap flex-wrap py-1 -mx-3 px-3 sm:mx-0 sm:px-0">
+          <Link href="/admin/create" className="inline-flex items-center rounded-md bg-gray-900 px-4 py-3 text-xs text-white hover:bg-gray-800 cursor-pointer">
+            Crear Producto
           </Link>
-          <button type="button" onClick={() => setOpenSize(true)} className="inline-flex items-center rounded-md bg-gray-700 px-3 py-2 text-xs text-white hover:bg-gray-600 cursor-pointer">crear size</button>
-          <button type="button" onClick={() => setOpenType(true)} className="inline-flex items-center rounded-md bg-gray-700 px-3 py-2 text-xs text-white hover:bg-gray-600 cursor-pointer">crear type</button>
+          <button type="button" onClick={() => setOpenSize(true)}
+            className="inline-flex items-center rounded-md bg-gray-900 px-4 py-3 text-xs text-white hover:bg-gray-800 cursor-pointer shadow-lg">
+            Crear una nueva talla
+          </button>
+          <button type="button" onClick={() => setOpenType(true)}
+            className="inline-flex items-center rounded-md bg-gray-900 px-4 py-3 text-xs text-white hover:bg-gray-800 cursor-pointer shadow-lg">
+            Crear una nueva categoría
+          </button>
         </div>
       </div>
-        {isSearching ? (
-          <ul className="flex flex-col gap-4 p-3">
-            {Array.from({ length: 10 }).map((_, index) => (
-              <CardProductSkeleton isList={true} key={index} />
-            ))}
-          </ul>
-        ) : (
-          <ul className="flex flex-col gap-4 p-3">
-            {(results ?? products).map((product) => (
-              <CardProduct isList={true} key={product.id} data={product} />
-            ))}
-          </ul>
-        )}
+      {isSearching ? (
+        <ul className="flex flex-col gap-4 p-3">
+          {Array.from({ length: 10 }).map((_, index) => (
+            <CardProductSkeleton isList={true} key={index} />
+          ))}
+        </ul>
+      ) : (
+        <ul className="flex flex-col gap-4 p-3">
+          {(results ?? products).map((product) => (
+            <CardProduct isList={true} key={product.id} data={product} />
+          ))}
+        </ul>
+      )}
       <TextPromptDialog
         open={openSize}
         title="crear size"

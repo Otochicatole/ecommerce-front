@@ -14,7 +14,10 @@
   aspect-ratio: 4 / 5;
 }
 
-.modernCardDisabled { opacity: .6; filter: grayscale(0.3); }
+.modernCardDisabled {
+  opacity: .6;
+  filter: grayscale(0.3);
+}
 
 .modernCard:hover {
   transform: translateY(-4px);
@@ -27,19 +30,39 @@
   background: #fff;
   border: 1px solid #e5e7eb;
   border-radius: 16px;
-  display: grid;
-  grid-template-columns: 160px 1fr;
-  gap: 12px;
+  display:flex;
   padding: 12px;
+  gap: 12px;
   align-items: center;
   position: relative;
   cursor: pointer;
   transition: transform .2s ease, box-shadow .2s ease, border-color .2s ease;
 }
-.modernCardList:hover { box-shadow: 0 6px 16px rgba(0,0,0,.08); transform: translateY(-2px); border-color: #d1d5db; }
-.cardListImageWrap { width: 160px; height: 120px; border-radius: 12px; overflow: hidden; background: #f3f4f6; }
-.modernCardList:hover .cardTopImage { transform: scale(1.04); }
-.cardListRight { display: flex; flex-direction: column; gap: 8px; }
+
+.modernCardList:hover {
+  box-shadow: 0 6px 16px rgba(0, 0, 0, .08);
+  transform: translateY(-2px);
+  border-color: #d1d5db;
+}
+
+.cardListImageWrap {
+  width: 100px;
+  min-width: 100px;
+  height: 120px;
+  border-radius: 12px;
+  overflow: hidden;
+  background: #f3f4f6;
+}
+
+.modernCardList:hover .cardTopImage {
+  transform: scale(1.04);
+}
+
+.cardListRight {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
 
 .cardTop {
   width: 100%;
@@ -51,8 +74,24 @@
   color: #fc6969;
 }
 
-.cardTopImage { width: 100%; height: 100%; object-fit: cover; transition: transform .25s ease; }
-.modernCard:hover .cardTopImage { transform: scale(1.03); }
+.cardTopImage {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform .25s ease;
+}
+
+.cardTopImageList {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  max-width: 100px;
+  transition: transform .25s ease;
+}
+
+.modernCard:hover .cardTopImage {
+  transform: scale(1.03);
+}
 
 .cardBottom {
   width: 100%;
@@ -66,9 +105,25 @@
   margin-top: auto;
 }
 
-.cardBottomTitle { margin-bottom: 8px; color: #111827; font-weight: 700; font-size: 18px; }
-.cardBottomPrice { display: flex; justify-content: space-between; align-items: center; gap: 8px; padding-top: 8px; }
-.cardBottomPriceList { justify-content: flex-start; }
+.cardBottomTitle {
+  margin-bottom: 8px;
+  color: #111827;
+  font-weight: 700;
+  font-size: 18px;
+}
+
+.cardBottomPrice {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  padding-top: 8px;
+}
+
+.cardBottomPriceList {
+  justify-content: flex-start;
+}
+
 .cardPrice {
   font-size: 18px;
   font-weight: 700;
@@ -76,9 +131,24 @@
   border-radius: 10px;
   box-shadow: none;
 }
-.cardPriceBlue { color: #0ea5e9; background: rgba(14, 165, 233, 0.08); border: 1px solid rgba(14, 165, 233, 0.18); }
-.cardPriceGreen { color: #10b981; background: rgba(16, 185, 129, 0.08); border: 1px solid rgba(16, 185, 129, 0.18); }
-.cardOldPrice { font-size: 13px; text-decoration: line-through; color: #9ca3af; }
+
+.cardPriceBlue {
+  color: #0ea5e9;
+  background: rgba(14, 165, 233, 0.08);
+  border: 1px solid rgba(14, 165, 233, 0.18);
+}
+
+.cardPriceGreen {
+  color: #10b981;
+  background: rgba(16, 185, 129, 0.08);
+  border: 1px solid rgba(16, 185, 129, 0.18);
+}
+
+.cardOldPrice {
+  font-size: 13px;
+  text-decoration: line-through;
+  color: #9ca3af;
+}
 
 .cardBrightFilter {
   width: 450px;
@@ -91,7 +161,9 @@
   pointer-events: none;
 }
 
-.modernCard:hover .cardBrightFilter { transform: rotate(-42deg) translateX(-15%) translateY(-79%); }
+.modernCard:hover .cardBrightFilter {
+  transform: rotate(-42deg) translateX(-15%) translateY(-79%);
+}
 
 .cardNewBadge {
   width: 75px;
@@ -109,6 +181,7 @@
   border-bottom-left-radius: 0;
   font-weight: 600;
 }
+
 /* catalog card-product styles */
 .article {
   position: relative;
@@ -246,8 +319,14 @@
 }
 
 /* clamp description lines to keep card heights consistent */
-.cta { display: none; }
-.stock { font-size: 12px; color: #10b981; }
+.cta {
+  display: none;
+}
+
+.stock {
+  font-size: 12px;
+  color: #10b981;
+}
 
 .footerContent {
   display: flex;
