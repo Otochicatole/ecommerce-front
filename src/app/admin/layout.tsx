@@ -5,7 +5,6 @@ import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import env from "@/config";
 import { ADMIN_COOKIE_NAME } from "@/shared/auth/cookie";
-import AdminBackBar from "@/shared/ui/admin-back-bar";
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
   const cookieStore = await cookies();
@@ -36,8 +35,6 @@ export default async function AdminLayout({ children }: { children: React.ReactN
 
   return (
     <div className="min-h-screen">
-      {/* Minimal admin back bar on subroutes */}
-      <AdminBackBar />
       {children}
     </div>
   );

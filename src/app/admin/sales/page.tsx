@@ -1,6 +1,7 @@
 import { getSales, getSalesTotalAmount } from "@/sales/infra/sales.http";
 import { SalesFilters } from "@/sales/ui/sales-filters";
 import Link from "next/link";
+import AdminPageActions from "@/shared/ui/admin-page-actions";
 
 export default async function SalesListPage({ searchParams }: { searchParams: Promise<{ [k: string]: string | string[] | undefined }> }) {
   const sp = await searchParams;
@@ -33,6 +34,7 @@ export default async function SalesListPage({ searchParams }: { searchParams: Pr
     <div className="p-4 mt-16 sm:mt-[72px] lg:mt-20">
       <div className="flex items-center justify-between mb-4">
         <h1 className="text-2xl font-bold">Ventas</h1>
+        <AdminPageActions />
       </div>
       <SalesFilters />
       <div className={`bg-white/80 mt-3 relative backdrop-blur-xl rounded-2xl shadow ring-1 ring-black/5 ${cardPadTop}`}>

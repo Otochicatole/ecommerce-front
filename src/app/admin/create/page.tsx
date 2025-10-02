@@ -1,5 +1,6 @@
 'use server';
 import AdmProductDetail from "@catalog/ui/adm-product-detail";
+import AdminPageActions from "@/shared/ui/admin-page-actions";
 import type { Product } from "@/types/api/product-response";
 import { createProduct } from "@ecommerce-front/features/catalog/services/product/create";
 import { uploadProductMedia, setProductMedia, deleteProductMedia } from "@ecommerce-front/features/catalog/services/product/media";
@@ -35,7 +36,10 @@ export default async function Page() {
 
     return (
         <>
-            <h1 className="text-2xl font-bold pt-6 pl-10 mt-16 sm:mt-[72px] lg:mt-20">Crear producto</h1>
+            <div className="px-10 mt-16 sm:mt-[72px] lg:mt-20 flex items-center justify-between">
+                <h1 className="text-2xl font-bold">Crear producto</h1>
+                <AdminPageActions />
+            </div>
             <AdmProductDetail
                 product={emptyProduct}
                 saveAction={createProduct}

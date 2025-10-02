@@ -1,5 +1,6 @@
 import { fetchProductByDocumentId } from "@ecommerce-front/features/catalog/services/product/get";
 import AdmProductDetail from "@catalog/ui/adm-product-detail";
+import AdminPageActions from "@/shared/ui/admin-page-actions";
 import { updateProduct } from "@ecommerce-front/features/catalog/services/product/mutate";
 import { getSizes } from "@ecommerce-front/features/catalog/services/size/get";
 import { getTypeProducts } from "@ecommerce-front/features/catalog/services/type-product/get";
@@ -21,7 +22,10 @@ export default async function Page({ params }: { params: Promise<{ product: stri
 
     return (
         <>
-            <h1 className="text-2xl font-bold pt-6 pl-10 mt-16 sm:mt-[72px] lg:mt-20">Editar producto</h1>
+            <div className="px-10 mt-16 sm:mt-[72px] lg:mt-20 flex items-center justify-between">
+                <h1 className="text-2xl font-bold">Editar producto</h1>
+                <AdminPageActions />
+            </div>
             <AdmProductDetail
                 product={productData}
                 saveAction={updateProduct}

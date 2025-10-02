@@ -2,8 +2,8 @@
 
 import NavBar from "@/shared/layout/nav-bar";
 import CartAside from "@/shared/cart/cart-aside";
-import { usePathname } from "next/navigation";
 import React from "react";
+import { usePathname } from "next/navigation";
 
 type MinimalCategory = { documentId?: string; type: string };
 

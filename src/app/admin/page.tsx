@@ -1,5 +1,6 @@
 "use client";
 import Link from "next/link";
+import AdminPageActions from "@/shared/ui/admin-page-actions";
 import { Package, ShoppingCart, FilePlus2, Boxes } from "lucide-react";
 
 
@@ -14,7 +15,10 @@ export default function AdminDashboardPage() {
 
   return (
     <main className="p-6 relative">
-      <h1 className="text-2xl font-bold mb-6">Panel admin</h1>
+      <div className="flex items-center justify-between mb-6">
+        <h1 className="text-2xl font-bold">Panel admin</h1>
+        <AdminPageActions />
+      </div>
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
         {cards.map(({ href, label, desc, Icon }) => (
           <Link
