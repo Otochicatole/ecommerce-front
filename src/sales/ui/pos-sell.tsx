@@ -7,7 +7,7 @@ import { fetchAllProducts, fetchProductsBySearch } from '@ecommerce-front/featur
 import { registerSale } from '@/sales/application/register-sale';
 import { Plus, Minus, Search, X } from 'lucide-react';
 import Image from 'next/image';
-import env from '@/config';
+import { getPublicImageUrl } from '@/shared/utils';
 
 type PosSellProps = {
   initialProducts?: Product[];
@@ -223,7 +223,7 @@ export function PosSell({ initialProducts = [] }: PosSellProps) {
           </div>
           <div className="mt-3 p-3">
             {(() => {
-              const imgs = (p.media ?? []).map(m => (m?.url ? `${env.strapiUrl}${m.url}` : '/nullimg.webp'));
+              const imgs = (p.media ?? []).map(m => getPublicImageUrl(m?.url));
               const url = imgs[activeIdx] ?? '/nullimg.webp';
               return (
                 <>

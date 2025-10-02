@@ -8,10 +8,12 @@ const isProd = process.env.NODE_ENV === 'production';
 const strapiUrl = process.env.NEXT_PUBLIC_STRAPI_URL || '';
 let STRAPI_HOST: string | undefined;
 let STRAPI_PROTO: 'http' | 'https' | undefined;
+let STRAPI_ORIGIN: string | undefined;
 try {
   const u = new URL(strapiUrl);
   STRAPI_HOST = u.hostname;
   STRAPI_PROTO = (u.protocol.replace(':', '') as 'http' | 'https');
+  STRAPI_ORIGIN = u.origin; // includes protocol + host + port
 } catch {}
 
 // CSP para desarrollo
@@ -62,6 +64,16 @@ const nextConfig: NextConfig = {
     remotePatterns: STRAPI_HOST && STRAPI_PROTO ? [
       { protocol: STRAPI_PROTO, hostname: STRAPI_HOST, pathname: "/**" },
     ] : [],
+  },
+  async rewrites() {
+    // Proxy Strapi media/assets through same-origin to avoid mixed content and localhost leaks
+    // Example: /media/uploads/abc.jpg -> proxied to <STRAPI_ORIGIN>/uploads/abc.jpg (origin preserves port)
+    if (STRAPI_ORIGIN) {
+      return [
+        { source: '/media/:path*', destination: `${STRAPI_ORIGIN}/:path*` },
+      ];
+    }
+    return [];
   },
   // Aumentamos el límite de payload para Server Actions (subida de archivos)
   serverActions: {

@@ -3,17 +3,14 @@ import { Product } from "@/types/api/product-response";
 import Image from "next/image";
 import { ChevronDown, ChevronUp, ChevronLeft, ChevronRight } from "lucide-react";
 import { useRef, useState } from "react";
-import env from "@/config";
+import { getPublicImageUrl } from "@/shared/utils";
 
 interface VerticalCarouselProps {
   data?: Product;
   setImageViewUrl?: React.Dispatch<React.SetStateAction<string>>;
 }
 
-const getImageUrl = (url?: string) => {
-  if (url) return `${env.strapiUrl}${url}`;
-  return "/nullimg.webp";
-};
+const getImageUrl = (url?: string) => getPublicImageUrl(url);
 
 const SCROLL_STEP = 10;
 const scrollStep = (direction: "up" | "down", smooth = false) => {

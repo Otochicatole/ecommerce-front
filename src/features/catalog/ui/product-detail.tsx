@@ -7,7 +7,7 @@ import { BlocksRenderer } from "@strapi/blocks-react-renderer";
 import { useMemo, useState } from "react";
 import { useCart } from "@/shared/cart/cart-context";
 import { toast } from "react-hot-toast";
-import env from "@/config";
+import { getPublicImageUrl } from "@/shared/utils";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 
 interface ProductDetailProps {
@@ -15,7 +15,7 @@ interface ProductDetailProps {
 }
 
 export default function ProductDetail({ product }: ProductDetailProps) {
-  const images = useMemo(() => (product.media ?? []).map(m => (m?.url ? `${env.strapiUrl}${m.url}` : '/nullimg.webp')), [product.media]);
+  const images = useMemo(() => (product.media ?? []).map(m => getPublicImageUrl(m?.url)), [product.media]);
   const initialImage = images[0] ?? "/nullimg.webp";
   const [imageViewUrl, setImageViewUrl] = useState(initialImage);
   const [activeIdx, setActiveIdx] = useState(0);

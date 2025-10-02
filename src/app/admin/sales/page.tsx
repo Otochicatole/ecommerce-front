@@ -33,7 +33,7 @@ export default async function SalesListPage({ searchParams }: { searchParams: Pr
   return (
     <div className="p-4 mt-16 sm:mt-[72px] lg:mt-20">
       <div className="flex items-center justify-between mb-4">
-        <h1 className="text-2xl font-bold">Ventas</h1>
+        <h1 className="text-2xl font-bold">Historial de ventas</h1>
         <AdminPageActions />
       </div>
       <SalesFilters />

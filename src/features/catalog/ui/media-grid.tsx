@@ -1,6 +1,6 @@
 'use client';
 import Image from "next/image";
-import env from "@/config";
+import { getPublicImageUrl } from "@/shared/utils";
 
 interface MediaItem {
     id: number | string;
@@ -22,7 +22,7 @@ export function MediaGrid({ items, keptMediaIds, onToggleKeep, primaryId, onSetP
             {items.map((m) => {
                 const idStr = String(m.id);
                 const checked = keptMediaIds.includes(idStr);
-                const url = m.url ? `${env.strapiUrl}${m.url}` : undefined;
+                const url = m.url ? getPublicImageUrl(m.url) : undefined;
                 return (
                     <div key={idStr} className={`relative rounded-lg border overflow-hidden max-w-100 ${primaryId === idStr ? 'border-gray-900' : 'border-gray-200'}`}>
                         {url ? (

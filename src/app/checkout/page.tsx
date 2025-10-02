@@ -2,7 +2,7 @@
 import Box from '@/shared/ui/box';
 import { useCart } from '@/shared/cart/cart-context';
 import Image from 'next/image';
-import env from '@/config';
+import { getPublicImageUrl } from '@/shared/utils';
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { Wallet, initMercadoPago } from '@mercadopago/sdk-react';
@@ -49,7 +49,7 @@ export default function CheckoutPage() {
           <>
             <ul className="divide-y divide-gray-200">
               {items.map(({ product, size, quantity }) => {
-                const imageUrl = product.media?.[0]?.url ? `${env.strapiUrl}${product.media[0].formats?.thumbnail?.url ?? product.media[0].url}` : '/nullimg.webp';
+                const imageUrl = getPublicImageUrl(product.media?.[0]?.formats?.thumbnail?.url ?? product.media?.[0]?.url);
                 return (
                   <li key={`${product.id}-${size ?? 'na'}`} className="flex items-center gap-4 py-4">
                     <Image src={imageUrl} alt={product.name} width={64} height={64} className="rounded-md object-cover" unoptimized />

@@ -4,7 +4,7 @@ import Image from "next/image";
 import { useState } from "react";
 import type { BlocksContent } from "@strapi/blocks-react-renderer";
 import { useRouter } from "next/navigation";
-import env from "@/config";
+import { getPublicImageUrl } from "@/shared/utils";
 import { blocksToPlainText, plainTextToBlocks } from "@/features/catalog/services/product/description";
 import { useMediaManager } from "@/features/catalog/services/product/media-manager";
 import { MediaGrid } from "@/features/catalog/ui/media-grid";
@@ -271,7 +271,7 @@ export default function AdmProductDetail({ product, saveAction, uploadMediaActio
                                         <div className="mt-1 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3">
                                             {removed.map((m) => (
                                                 <div key={m.id} className="max-w-100">
-                                                    <Image src={`${env.strapiUrl}${m.url}`}
+                                                    <Image src={getPublicImageUrl(m.url)}
                                                         alt={m.name}
                                                         width={120}
                                                         height={80}

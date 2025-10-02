@@ -1,6 +1,6 @@
 'use client';
 import { Product } from "@/types/api/product-response";
-import env from "@/config";
+import { getPublicImageUrl } from "@/shared/utils";
 import Image from "next/image";
 import styles from "@/styles/catalog/card-product.module.css";
 import { useRouter } from "next/navigation";
@@ -8,7 +8,6 @@ import { useAdminAuth } from "@shared/auth/admin-auth-context";
 
 export default function CardProduct({ data, isList = false }: { data: Product; isList?: boolean }) {
   const router = useRouter();
-  const URL = env.strapiUrl;
   // isAdmin
   const { isAdmin } = useAdminAuth();
 
@@ -26,7 +25,7 @@ export default function CardProduct({ data, isList = false }: { data: Product; i
   };
 
   const mainImage = data.media?.[0];
-  const imageUrl = mainImage?.url ? `${URL}${mainImage.url}` : "/nullimg.webp";
+  const imageUrl = getPublicImageUrl(mainImage?.url);
   const imageAlt = mainImage?.alternativeText || "Producto";
 
   // legacy classes kept for compatibility but unused in modern card

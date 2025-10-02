@@ -2,7 +2,7 @@
 import { useCart } from "./cart-context";
 import Image from "next/image";
 import { Trash2, X } from "lucide-react";
-import env from "@/config";
+import { getPublicImageUrl } from "@/shared/utils";
 import { motion, AnimatePresence } from "framer-motion";
 import { useRouter } from "next/navigation";
 
@@ -52,7 +52,7 @@ export default function CartAside() {
                 <p className="text-center text-gray-500">Aún no agregaste productos.</p>
               ) : (
                 items.map(({ product, size, quantity }) => {
-                  const imageUrl = product.media?.[0]?.url ? `${env.strapiUrl}${product.media[0].formats?.thumbnail?.url ?? product.media[0].url}` : "/nullimg.webp";
+                  const imageUrl = getPublicImageUrl(product.media?.[0]?.formats?.thumbnail?.url ?? product.media?.[0]?.url);
                   return (
                     <div
                       key={`${product.id}-${size ?? 'na'}`}
