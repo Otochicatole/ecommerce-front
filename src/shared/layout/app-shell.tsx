@@ -26,5 +26,3 @@ export default function AppShell({ categories = [], children }: AppShellProps) {
     </>
   );
 }
-
-
