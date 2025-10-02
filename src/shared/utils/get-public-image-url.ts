@@ -1,6 +1,5 @@
 'use client';
 
-import env from '@/config';
 
 /**
  * Build a public image URL safe to render from the browser.
