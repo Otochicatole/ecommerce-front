@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { Search } from 'lucide-react';
+import { BrushCleaning, Search } from 'lucide-react';
 
 function formatYMD(d?: string) {
   if (!d) return '';
@@ -39,7 +39,34 @@ export function SalesFilters() {
     router.push(`/admin/sales${qs ? `?${qs}` : ''}`);
   }
 
-  // computed previews reserved for future badge-style buttons
+  // check which preset is active
+  function getActivePreset(): string | null {
+    if (!from || !to) return null;
+    
+    const now = new Date();
+    const today = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')}`;
+    
+    // Hoy
+    if (from === today && to === today) return 'hoy';
+    
+    // 7 días
+    const date7 = new Date();
+    date7.setDate(now.getDate() - 6);
+    const from7 = date7.toISOString().slice(0,10);
+    const to7 = now.toISOString().slice(0,10);
+    if (from === from7 && to === to7) return '7';
+    
+    // 30 días
+    const date30 = new Date();
+    date30.setDate(now.getDate() - 29);
+    const from30 = date30.toISOString().slice(0,10);
+    const to30 = now.toISOString().slice(0,10);
+    if (from === from30 && to === to30) return '30';
+    
+    return null;
+  }
+
+  const activePreset = getActivePreset();
 
   return (
     <div className="w-full bg-white/80 backdrop-blur-xl rounded-2xl shadow ring-1 ring-black/5 p-3">
@@ -90,13 +117,25 @@ export function SalesFilters() {
               } },
               { k: '7', label: '7 días', calc: () => { const to = new Date(); const from = new Date(); from.setDate(to.getDate()-6); return { from: from.toISOString().slice(0,10), to: to.toISOString().slice(0,10) }; } },
               { k: '30', label: '30 días', calc: () => { const to = new Date(); const from = new Date(); from.setDate(to.getDate()-29); return { from: from.toISOString().slice(0,10), to: to.toISOString().slice(0,10) }; } },
-            ].map((p) => (
-              <button key={p.k} type="button" onClick={() => { const r = p.calc(); setFrom(r.from); setTo(r.to); applyFilters({ from: r.from, to: r.to }); }} className="px-3 py-1.5 text-xs rounded-full bg-white shadow-sm hover:shadow cursor-pointer">
-                {p.label}
-              </button>
-            ))}
+            ].map((p) => {
+              const isActive = activePreset === p.k;
+              return (
+                <button 
+                  key={p.k} 
+                  type="button" 
+                  onClick={() => { const r = p.calc(); setFrom(r.from); setTo(r.to); applyFilters({ from: r.from, to: r.to }); }} 
+                  className={`px-3 py-1.5 text-xs rounded-full transition-all ${
+                    isActive 
+                      ? 'bg-blue-600 text-white shadow-md' 
+                      : 'bg-white shadow-sm hover:shadow cursor-pointer'
+                  }`}
+                >
+                  {p.label}
+                </button>
+              );
+            })}
           </div>
-          <button type="button" onClick={() => { setQ(''); setFrom(''); setTo(''); router.push('/admin/sales'); }} className="px-4 py-2 text-xs sm:text-sm rounded-full bg-gray-100 w-fit self-start cursor-pointer">Limpiar</button>
+          <button type="button" onClick={() => { setQ(''); setFrom(''); setTo(''); router.push('/admin/sales'); }} className="px-4 py-2 text-xs sm:text-sm rounded-full bg-gray-100 w-fit self-start cursor-pointer"><BrushCleaning size={16} className="text-gray-500" /></button>
         </div>
       </div>
     </div>
