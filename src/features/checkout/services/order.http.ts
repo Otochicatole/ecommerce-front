@@ -35,6 +35,11 @@ export type OrderResponse = {
     total: number;
     order: string;
     orderPayment: boolean;
+    payerName?: string;
+    payerEmail?: string;
+    payerDni?: string;
+    mpPaymentId?: string;
+    mpPaymentStatus?: string;
     createdAt: string;
     updatedAt: string;
     publishedAt: string;
@@ -46,6 +51,43 @@ export async function createOrder(payload: CreateOrderPayload): Promise<OrderRes
   const { data } = await httpClient.post<OrderResponse>('/api/orders', {
     data: payload,
   });
+  return data;
+}
+
+// Update order payment status and payer info after payment confirmation
+export async function updateOrderPayment(
+  orderId: string,
+  paymentData: {
+    orderPayment: boolean;
+    payerName?: string;
+    payerEmail?: string;
+    payerDni?: string;
+    mpPaymentId?: string;
+    mpPaymentStatus?: string;
+  }
+): Promise<OrderResponse> {
+  // Find order by order field (unique identifier)
+  type OrderListResponse = { data: OrderResponse['data'][] };
+  const { data: responseData } = await httpClient.get<OrderListResponse>(
+    `/api/orders?filters[order][$eq]=${orderId}`
+  );
+
+  const orders = responseData.data;
+
+  if (!orders || !Array.isArray(orders) || orders.length === 0) {
+    throw new Error(`Order not found: ${orderId}`);
+  }
+
+  const order = orders[0];
+
+  // Update order with payment confirmation data
+  const { data } = await httpClient.put<OrderResponse>(
+    `/api/orders/${order.documentId}`,
+    {
+      data: paymentData,
+    }
+  );
+
   return data;
 }
 

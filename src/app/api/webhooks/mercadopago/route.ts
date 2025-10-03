@@ -185,21 +185,77 @@ export async function POST(request: NextRequest) {
           next: { revalidate: 0 },
         });
         const payment = await resp.json().catch(() => ({} as unknown));
+        
+        const paymentStatus = payment?.status ?? null;
+        const externalReference = payment?.external_reference ?? null;
+        
         console.log(
           JSON.stringify(
             {
               source: "mercadopago-webhook",
               message: "Fetched payment",
               id: dataId,
-              status: payment?.status ?? null,
+              status: paymentStatus,
               status_detail: payment?.status_detail ?? null,
-              external_reference: payment?.external_reference ?? null,
-              order: payment?.order ?? null,
+              external_reference: externalReference,
+              payer: payment?.payer ?? null,
             },
             null,
             2,
           ),
         );
+
+        // If payment is approved and we have an order reference, update the order
+        if (paymentStatus === "approved" && externalReference) {
+          try {
+            // Import the update function dynamically to avoid circular deps
+            const { updateOrderPayment } = await import("@/features/checkout/services/order.http");
+            
+            // Extract payer information from the payment
+            const payer = payment?.payer;
+            const payerName = payer?.first_name && payer?.last_name 
+              ? `${payer.first_name} ${payer.last_name}`.trim()
+              : undefined;
+            const payerEmail = payer?.email ?? undefined;
+            const payerDni = payer?.identification?.number ?? undefined;
+
+            await updateOrderPayment(externalReference, {
+              orderPayment: true,
+              payerName,
+              payerEmail,
+              payerDni,
+              mpPaymentId: String(dataId),
+              mpPaymentStatus: paymentStatus,
+            });
+
+            console.log(
+              JSON.stringify(
+                {
+                  source: "mercadopago-webhook",
+                  message: "Order updated successfully",
+                  orderId: externalReference,
+                  paymentId: dataId,
+                  payerDni,
+                },
+                null,
+                2,
+              ),
+            );
+          } catch (updateErr) {
+            console.error(
+              JSON.stringify(
+                {
+                  source: "mercadopago-webhook",
+                  message: "Failed to update order",
+                  orderId: externalReference,
+                  error: updateErr instanceof Error ? updateErr.message : String(updateErr),
+                },
+                null,
+                2,
+              ),
+            );
+          }
+        }
       } catch (fetchErr) {
         console.error("mercadopago-webhook: error fetching payment", fetchErr);
       }

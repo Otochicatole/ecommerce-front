@@ -20,6 +20,12 @@ export interface Order {
   total: number;
   order: string; // unique order identifier (UID)
   orderPayment: boolean;
+  // Payer data from Mercado Pago (filled after payment confirmation)
+  payerName?: string;
+  payerEmail?: string;
+  payerDni?: string;
+  mpPaymentId?: string;
+  mpPaymentStatus?: string;
   createdAt: string;
   updatedAt: string;
   publishedAt: string;
