@@ -2,6 +2,7 @@ import { getSales, getSalesTotalAmount } from "@/sales/infra/sales.http";
 import { SalesFilters } from "@/sales/ui/sales-filters";
 import Link from "next/link";
 import AdminPageActions from "@/shared/ui/admin-page-actions";
+import styles from "@/styles/shared/admin-header.module.css";
 
 export default async function SalesListPage({ searchParams }: { searchParams: Promise<{ [k: string]: string | string[] | undefined }> }) {
   const sp = await searchParams;
@@ -32,8 +33,8 @@ export default async function SalesListPage({ searchParams }: { searchParams: Pr
   const cardPadTop = showTotal ? 'pt-10 sm:pt-0' : '';
   return (
     <div className="p-4 mt-16 sm:mt-[72px] lg:mt-20">
-      <div className="flex items-center justify-between mb-4">
-        <h1 className="text-2xl font-bold">Historial de ventas</h1>
+      <div className={styles.header}>
+        <h1 className={styles.title}>Historial de ventas</h1>
         <AdminPageActions />
       </div>
       <SalesFilters />

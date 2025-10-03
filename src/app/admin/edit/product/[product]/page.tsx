@@ -2,6 +2,7 @@ import { fetchProductByDocumentId } from "@ecommerce-front/features/catalog/serv
 import AdmProductDetail from "@catalog/ui/adm-product-detail";
 import AdminPageActions from "@/shared/ui/admin-page-actions";
 import { updateProduct } from "@ecommerce-front/features/catalog/services/product/mutate";
+import styles from "@/styles/shared/admin-header.module.css";
 import { getSizes } from "@ecommerce-front/features/catalog/services/size/get";
 import { getTypeProducts } from "@ecommerce-front/features/catalog/services/type-product/get";
 import { uploadProductMedia, setProductMedia, deleteProductMedia } from "@ecommerce-front/features/catalog/services/product/media";
@@ -22,8 +23,8 @@ export default async function Page({ params }: { params: Promise<{ product: stri
 
     return (
         <>
-            <div className="px-10 mt-16 sm:mt-[72px] lg:mt-20 flex items-center justify-between">
-                <h1 className="text-2xl font-bold">Editar producto</h1>
+            <div className={`px-10 mt-16 sm:mt-[72px] lg:mt-20 ${styles.header}`}>
+                <h1 className={styles.title}>Editar producto</h1>
                 <AdminPageActions />
             </div>
             <AdmProductDetail

@@ -2,6 +2,7 @@ import { fetchProducts } from "@ecommerce-front/features/catalog/services/produc
 import { DEFAULT_PAGE_SIZE } from "@/config";
 import StockContent from "@catalog/ui/stock-content";
 import AdminPageActions from "@/shared/ui/admin-page-actions";
+import styles from "@/styles/shared/admin-header.module.css";
 
 interface AllPageProps {
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
@@ -18,8 +19,8 @@ export default async function StockPage({ searchParams }: AllPageProps) {
 
   return (
     <div className="p-4 mt-16 sm:mt-[72px] lg:mt-20 max-w-screen-xl mx-auto">
-      <div className="flex items-center justify-between mb-4">
-        <h1 className="text-2xl font-bold">Stock</h1>
+      <div className={styles.header}>
+        <h1 className={styles.title}>Stock</h1>
         <AdminPageActions />
       </div>
       <StockContent products={products} currentPage={currentPage} pageCount={pageCount} />

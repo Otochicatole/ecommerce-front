@@ -1,0 +1,121 @@
+.container {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-left: 10px;
+}
+
+@media (max-width: 640px) {
+  .container {
+    order: 1;
+    margin-left: 0;
+  }
+}
+
+.button {
+  position: relative;
+  padding: 0.625rem 1.125rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  line-height: 1.4;
+  letter-spacing: -0.01em;
+  border-radius: 12px;
+  border: 1px solid var(--ios-border);
+  background: rgba(255, 255, 255, 0.85);
+  color: var(--foreground);
+  cursor: pointer;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  box-shadow: 0 1px 3px var(--ios-shadow);
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.button:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  background: rgba(255, 255, 255, 0.95);
+}
+
+.button:active {
+  transform: translateY(0) scale(0.98);
+  box-shadow: 0 1px 3px var(--ios-shadow);
+  transition: all 0.1s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.backButton {
+  composes: button;
+}
+
+.backButton:hover {
+  border-color: var(--ios-blue);
+  color: var(--ios-blue);
+}
+
+.backButton .icon {
+  transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.backButton:hover .icon {
+  transform: translateX(-2px);
+}
+
+.logoutButton {
+  composes: button;
+  background: linear-gradient(135deg, rgba(255, 59, 48, 0.08) 0%, rgba(255, 69, 58, 0.08) 100%);
+  border-color: rgba(255, 59, 48, 0.2);
+  color: #ff3b30;
+}
+
+.logoutButton:hover {
+  background: linear-gradient(135deg, rgba(255, 59, 48, 0.92) 0%, rgba(255, 69, 58, 0.95) 100%);
+  border-color: rgba(255, 59, 48, 0.3);
+  color: white;
+}
+
+.icon {
+  width: 1rem;
+  height: 1rem;
+  flex-shrink: 0;
+}
+
+@media (max-width: 640px) {
+  .button {
+    padding: 0.5rem 0.875rem;
+    font-size: 0.8125rem;
+    border-radius: 10px;
+  }
+  
+  .icon {
+    width: 0.9rem;
+    height: 0.9rem;
+  }
+  
+  .container {
+    gap: 0.5rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .button,
+  .backButton .icon {
+    transition: none;
+  }
+  
+  .button:hover {
+    transform: none;
+  }
+  
+  .button:active {
+    transform: scale(0.98);
+  }
+  
+  .backButton:hover .icon {
+    transform: none;
+  }
+}
+

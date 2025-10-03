@@ -2,6 +2,7 @@
 import AdmProductDetail from "@catalog/ui/adm-product-detail";
 import AdminPageActions from "@/shared/ui/admin-page-actions";
 import type { Product } from "@/types/api/product-response";
+import styles from "@/styles/shared/admin-header.module.css";
 import { createProduct } from "@ecommerce-front/features/catalog/services/product/create";
 import { uploadProductMedia, setProductMedia, deleteProductMedia } from "@ecommerce-front/features/catalog/services/product/media";
 import { getSizes } from "@ecommerce-front/features/catalog/services/size/get";
@@ -36,8 +37,8 @@ export default async function Page() {
 
     return (
         <>
-            <div className="px-10 mt-16 sm:mt-[72px] lg:mt-20 flex items-center justify-between">
-                <h1 className="text-2xl font-bold">Crear producto</h1>
+            <div className={`px-10 mt-16 sm:mt-[72px] lg:mt-20 ${styles.header}`}>
+                <h1 className={styles.title}>Crear producto</h1>
                 <AdminPageActions />
             </div>
             <AdmProductDetail

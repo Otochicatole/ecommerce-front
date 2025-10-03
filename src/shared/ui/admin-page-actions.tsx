@@ -4,6 +4,7 @@ import React from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { useAdminAuth } from "@/shared/auth/admin-auth-context";
 import { ArrowLeftIcon, LogOutIcon } from "lucide-react";
+import styles from "@/styles/shared/admin-page-actions.module.css";
 
 export default function AdminPageActions() {
   const pathname = usePathname();
@@ -15,14 +16,14 @@ export default function AdminPageActions() {
   if (!isAdminRoute) return null;
 
   return (
-    <div className="flex items-center gap-2">
+    <div className={styles.container}>
       {!isAdminRoot && (
         <button
           type="button"
           onClick={() => router.push("/admin")}
-          className="px-3 py-2 flex items-center cursor-pointer text-xs sm:text-sm border rounded-md hover:bg-gray-100"
+          className={styles.backButton}
         >
-          <ArrowLeftIcon className="w-4 h-4 mr-2" />
+          <ArrowLeftIcon className={styles.icon} />
           Volver al panel
         </button>
       )}
@@ -30,9 +31,9 @@ export default function AdminPageActions() {
         <button
           type="button"
           onClick={async () => { await logout(); router.replace('/'); }}
-          className="px-3 py-2 flex items-center cursor-pointer text-xs sm:text-sm border border-red-500 rounded-md hover:bg-red-500 text-red-500 hover:text-white transition-colors"
+          className={styles.logoutButton}
         >
-          <LogOutIcon className="w-4 h-4 mr-2" />
+          <LogOutIcon className={styles.icon} />
           Cerrar sesión
         </button>
       )}
