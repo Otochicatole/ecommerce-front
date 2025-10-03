@@ -6,6 +6,7 @@
 import { useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useAdminAuth } from "@/shared/auth/admin-auth-context";
+import styles from "@/styles/auth/login.module.css";
 
 export default function Page() {
   const { login, loading } = useAdminAuth();
@@ -29,38 +30,46 @@ export default function Page() {
   }
 
   return (
-    <div className="flex items-center justify-center min-h-[70vh] p-4">
-      <form onSubmit={onSubmit} className="w-full max-w-sm space-y-4 border rounded-xl p-6 shadow">
-        <h1 className="text-2xl font-semibold">Admin login</h1>
-        <div className="flex flex-col gap-2">
-          <label htmlFor="email" className="text-sm">Email</label>
+    <div className={styles.container}>
+      <form onSubmit={onSubmit} className={styles.form}>
+        <h1 className={styles.title}>Admin login</h1>
+        
+        <div className={styles.fieldGroup}>
+          <label htmlFor="email" className={styles.label}>
+            Email
+          </label>
           <input
             id="email"
             type="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            className="border rounded-md px-3 py-2"
+            className={styles.input}
             placeholder="admin@example.com"
             required
           />
         </div>
-        <div className="flex flex-col gap-2">
-          <label htmlFor="password" className="text-sm">Password</label>
+
+        <div className={styles.fieldGroup}>
+          <label htmlFor="password" className={styles.label}>
+            Password
+          </label>
           <input
             id="password"
             type="password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            className="border rounded-md px-3 py-2"
+            className={styles.input}
             placeholder="••••••••"
             required
           />
         </div>
-        {error ? <p className="text-red-600 text-sm">{error}</p> : null}
+
+        {error && <p className={styles.error}>{error}</p>}
+
         <button
           type="submit"
           disabled={loading}
-          className="w-full bg-black text-white rounded-md py-2 disabled:opacity-60"
+          className={styles.button}
         >
           {loading ? "Signing in..." : "Sign in"}
         </button>
