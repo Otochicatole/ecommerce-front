@@ -29,8 +29,23 @@ const ProductSchema = z.object({
   currency_id: z.string().min(3).max(3),
 });
 
+// Esquema del payer (información del comprador)
+const PayerSchema = z.object({
+  name: z.string().optional(),
+  surname: z.string().optional(),
+  email: z.string().email().optional(),
+  identification: z.object({
+    type: z.string().optional(),
+    number: z.string().optional(),
+  }).optional(),
+}).optional();
+
 // Esquema del request: lista de items obligatoria
-const Schema = z.object({ items: z.array(ProductSchema).min(1) });
+const Schema = z.object({
+  items: z.array(ProductSchema).min(1),
+  payer: PayerSchema,
+  externalReference: z.string().optional(),
+});
 
 export async function POST(req: NextRequest) {
   // Determinamos origin del sitio para redirecciones y webhook por defecto
@@ -53,9 +68,9 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Payload inválido" }, { status: 400 });
     }
 
-    const { items } = parsed.data;
+    const { items, payer, externalReference } = parsed.data;
     // external_reference debe identificar tu orden internamente
-    const external_reference = `order_${Date.now()}`;
+    const external_reference = externalReference ?? `order_${Date.now()}`;
 
     // Construimos la payload de la preference
     const preferencePayload: Record<string, unknown> = {
@@ -63,6 +78,11 @@ export async function POST(req: NextRequest) {
       external_reference,
       metadata: { productIds: items.map(i => i.id) },
     };
+
+    // incluir información del payer si está disponible
+    if (payer) {
+      Object.assign(preferencePayload, { payer });
+    }
 
     // back_urls para redirecciones post-checkout
     Object.assign(preferencePayload, {

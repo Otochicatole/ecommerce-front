@@ -3,14 +3,19 @@
 // server action para crear una preference de Mercado Pago a partir del carrito del cliente.
 // responsabilidades:
 // - recibir items del carrito desde el cliente (documentId, productId, size, quantity)
+// - recibir datos personales del cliente (nombre, apellido, dni)
 // - consultar a strapi por documentId para obtener datos autoritativos del producto
 // - validar identidad del producto (id/documentId) y disponibilidad del talle
+// - crear orden en Strapi con identificador único
 // - construir los items de Mercado Pago usando precios verificados del lado servidor
+// - incluir información del payer (dni, nombre) en la preference
 // - loguear la verificación para auditoría
 // - llamar a la ruta interna que crea la preference y devolver el preferenceId
 
 import { fetchProductByDocumentId } from '@ecommerce-front/features/catalog/services/product/get';
 import { headers } from 'next/headers';
+import { createOrder, type OrderItem } from '@/features/checkout/services/order.http';
+import { generateOrderId } from '@/features/checkout/services/order.utils';
 
 // payload de un item que viene del carrito del cliente
 // productId: id numérico que ve el cliente; se usa para cruzar identidad
@@ -24,17 +29,39 @@ type CartInputItem = {
   quantity: number;
 };
 
+// datos personales del cliente para la orden
+type CustomerData = {
+  name: string;
+  lastName: string;
+  dni: string;
+  email: string;
+};
+
 // respuesta mínima que devuelve la ruta interna de preference
 type PreferenceResponse = {
   preferenceId: string;
+  orderId: string;
 };
 
-// crea una preference de Mercado Pago a partir de items validados del carrito.
-// lanza error si el carrito está vacío, si falla alguna validación
+// crea una orden en Strapi y una preference de Mercado Pago a partir de items validados del carrito.
+// lanza error si el carrito está vacío, si falla alguna validación, si falta información del cliente
 // o si la API interna de preference responde con error.
-export async function createPreferenceFromCart(cartItems: CartInputItem[]): Promise<PreferenceResponse> {
+export async function createPreferenceFromCart(
+  cartItems: CartInputItem[],
+  customerData: CustomerData
+): Promise<PreferenceResponse> {
   if (!Array.isArray(cartItems) || cartItems.length === 0) {
     throw new Error('Cart is empty');
+  }
+
+  // validate customer data
+  if (!customerData.name?.trim() || !customerData.lastName?.trim() || !customerData.dni?.trim() || !customerData.email?.trim()) {
+    throw new Error('Customer data is incomplete');
+  }
+
+  const dniNumber = Number(customerData.dni);
+  if (!Number.isInteger(dniNumber) || dniNumber <= 0) {
+    throw new Error('DNI must be a valid positive number');
   }
 
   // 1) consultar a strapi por documentId para cada item del carrito
@@ -97,18 +124,52 @@ export async function createPreferenceFromCart(cartItems: CartInputItem[]): Prom
     throw new Error('No valid products found to create preference');
   }
 
+  // 3.1) calculate total
+  const total = mpItems.reduce((acc, it) => acc + it.unit_price * it.quantity, 0);
+
+  // 3.2) create order items for Strapi
+  const orderItems: OrderItem[] = products
+    .filter((p) => p.product)
+    .map(({ ci, product }) => ({
+      productId: product!.id,
+      documentId: product!.documentId,
+      name: product!.name,
+      price: Number(product!.offer ? product!.offerPrice : product!.price),
+      quantity: ci.quantity,
+      size: ci.size,
+    }));
+
+  // 3.3) generate unique order identifier
+  const orderId = generateOrderId();
+
+  // 3.4) create order in Strapi
+  try {
+    await createOrder({
+      name: customerData.name.trim(),
+      lastName: customerData.lastName.trim(),
+      dni: dniNumber,
+      products: orderItems,
+      total,
+      order: orderId,
+      orderPayment: false, // will be updated by webhook when payment is confirmed
+    });
+  } catch (error) {
+    console.error('Failed to create order in Strapi', error);
+    throw new Error('Failed to create order');
+  }
+
   // 4) log de auditoría para observabilidad (seguro para producción)
   try {
-    const total = mpItems.reduce((acc, it) => acc + it.unit_price * it.quantity, 0);
     console.log(
       JSON.stringify(
         {
           source: 'checkout-server',
-          message: 'Verified cart items against Strapi, using authoritative prices',
+          message: 'Created order and verified cart items against Strapi',
+          orderId,
+          customer: { name: customerData.name, lastName: customerData.lastName, dni: dniNumber },
           items: mpItems.map((it) => ({ id: it.id, title: it.title, quantity: it.quantity, unit_price: it.unit_price, currency_id: it.currency_id })),
           total,
           currency: 'ARS',
-          notFoundDocumentIds: notFound.length ? notFound : undefined,
         },
         null,
         2,
@@ -130,11 +191,23 @@ export async function createPreferenceFromCart(cartItems: CartInputItem[]): Prom
       || (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'http://localhost:3000');
   }
 
-  // 6) crear la preference usando la ruta interna
+  // 6) crear la preference usando la ruta interna, incluyendo datos del payer
   const res = await fetch(`${baseUrl}/api/payments/mp/preference`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ items: mpItems }),
+    body: JSON.stringify({
+      items: mpItems,
+      payer: {
+        name: customerData.name.trim(),
+        surname: customerData.lastName.trim(),
+        email: customerData.email.trim(),
+        identification: {
+          type: 'DNI',
+          number: String(dniNumber),
+        },
+      },
+      externalReference: orderId,
+    }),
     // Avoid caching on server
     cache: 'no-store',
   });
@@ -152,9 +225,9 @@ export async function createPreferenceFromCart(cartItems: CartInputItem[]): Prom
     throw new Error(`Failed to create preference: ${res.status} ${details ? JSON.stringify(details) : ''}`);
   }
 
-  // 7) devolver el preferenceId al cliente
+  // 7) devolver el preferenceId y orderId al cliente
   const data = (await res.json()) as PreferenceResponse;
-  return data;
+  return { ...data, orderId };
 }
 
 
